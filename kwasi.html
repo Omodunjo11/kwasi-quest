@@ -29,6 +29,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 #cin-title{font-family:'Press Start 2P',monospace;font-size:clamp(.6rem,2.5vw,1rem);color:var(--gold);text-align:center;line-height:1.9;text-shadow:0 0 30px rgba(255,215,0,.5);margin-bottom:1.5rem;opacity:0;transform:scale(.7);transition:opacity .5s,transform .5s}
 #cin-title.show{opacity:1;transform:scale(1)}
 #cin-prompt{font-family:'Press Start 2P',monospace;font-size:clamp(.42rem,1.5vw,.58rem);color:var(--pl);text-align:center;opacity:0}
+#cin-skip{position:fixed;bottom:1.5rem;right:1.5rem;font-family:'Press Start 2P',monospace;font-size:.45rem;color:var(--muted);background:transparent;border:1px solid var(--muted);padding:.5rem .9rem;cursor:pointer;letter-spacing:.08em;z-index:100;opacity:.6;transition:opacity .2s}
+#cin-skip:hover{opacity:1;color:var(--text);border-color:var(--text)}
 #cin-prompt.blink{animation:blink 1s step-end infinite;opacity:1}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
@@ -172,6 +174,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   </div>
   <div id="cin-title">OPERATION:<br>KWASI COMES<br>TO NEW YORK</div>
   <div id="cin-prompt">[ PRESS ANY KEY TO BEGIN ]</div>
+  <button id="cin-skip" onclick="skipCin()">SKIP &#9654;&#9654;</button>
 </div>
 
 <!-- CHARACTER SHEET -->
@@ -355,7 +358,10 @@ function flash(cb){const f=document.getElementById('flash');f.style.opacity='1';
 
 const LINES=["Somewhere in New York City...","A plan was being made.","An operative was being summoned.","His name was Kwasi.","He had no idea what was coming."];
 let cinReady=false;
-function runCin(){let t=500;LINES.forEach((line,i)=>{setTimeout(()=>typeLine('cl'+i,line),t);t+=line.length*38+650});setTimeout(()=>document.getElementById('cin-title').classList.add('show'),t+200);setTimeout(()=>{document.getElementById('cin-prompt').classList.add('blink');cinReady=true},t+900)}
+function clearAllCinTimeouts(){_cinTimers.forEach(clearTimeout);_cinTimers=[];clearInterval(window._tv)}
+function skipCin(){clearAllCinTimeouts();document.querySelectorAll('.cl').forEach(el=>{const i=parseInt(el.id.replace('cl',''));if(LINES[i])el.textContent=LINES[i];el.style.opacity=1});document.getElementById('cin-title').classList.add('show');document.getElementById('cin-prompt').classList.add('blink');cinReady=true}
+let _cinTimers=[];
+function runCin(){let t=500;LINES.forEach((line,i)=>{_cinTimers.push(setTimeout(()=>typeLine('cl'+i,line),t));t+=line.length*38+650});_cinTimers.push(setTimeout(()=>document.getElementById('cin-title').classList.add('show'),t+200));_cinTimers.push(setTimeout(()=>{document.getElementById('cin-prompt').classList.add('blink');cinReady=true},t+900))}
 function typeLine(id,txt){const el=document.getElementById(id);el.style.opacity='1';let i=0;const iv=setInterval(()=>{el.textContent=txt.slice(0,++i);if(i>=txt.length)clearInterval(iv)},36)}
 document.getElementById('cin').addEventListener('click',advCin);
 document.addEventListener('keydown',advCin);
