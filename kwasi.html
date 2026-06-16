@@ -108,9 +108,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 /* DIALOGUE */
 #dlg{position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(5,8,16,.97);border-top:2px solid var(--gold);transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)}
 #dlg.open{transform:translateY(0)}
-.dlg-img{width:100%;height:155px;object-fit:cover;object-position:center 30%;display:none}
+.dlg-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:.8rem;margin-bottom:.65rem}
+.dlg-img{width:90px;height:68px;object-fit:cover;object-position:center;display:none;border:1px solid var(--border);flex-shrink:0}
 .dlg-body{padding:.9rem 1.1rem 1.2rem}
-.dlg-zt{font-family:'Press Start 2P',monospace;font-size:clamp(.4rem,1.3vw,.52rem);color:var(--gdim);margin-bottom:.65rem;line-height:1.8}
+.dlg-zt{font-family:'Press Start 2P',monospace;font-size:clamp(.4rem,1.3vw,.52rem);color:var(--gdim);line-height:1.8;flex:1}
 .dlg-row{display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem}
 .dlg-port{width:42px;height:42px;border:2px solid var(--gold);background:#1a1f35;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
 .dlg-port.pur{border-color:var(--pl)}
@@ -288,9 +289,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 
 <!-- DIALOGUE BOX -->
 <div id="dlg">
-  <img id="dlg-img" class="dlg-img" alt=""/>
   <div class="dlg-body">
-    <div class="dlg-zt" id="dlg-zt"></div>
+    <div class="dlg-hdr">
+      <div class="dlg-zt" id="dlg-zt"></div>
+      <img id="dlg-img" class="dlg-img" alt=""/>
+    </div>
     <div class="dlg-row"><div class="dlg-port" id="dlg-port">&#128172;</div><div class="dlg-spk" id="dlg-spk">LAPO</div></div>
     <div class="dlg-txt" id="dlg-txt"></div>
     <div class="dlg-foot">
