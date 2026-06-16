@@ -665,7 +665,7 @@ function devSkipStage(){
   }
 }
 document.addEventListener('keydown',e=>{
-  if((e.metaKey||e.ctrlKey)&&e.key==='1'){e.preventDefault();e.stopPropagation();devSkipStage()}
+  if(e.key==='Enter'){e.preventDefault();e.stopPropagation();devSkipStage()}
 },true);
 
 initMapPins();
