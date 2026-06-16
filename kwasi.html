@@ -46,7 +46,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 /* CHARACTER SHEET */
 #char{overflow-y:auto}
 .char-card{background:var(--card);border:2px solid var(--gold);
-  max-width:400px;width:100%;padding:1.4rem;box-shadow:0 0 30px rgba(255,215,0,.12)}
+  max-width:540px;width:100%;padding:1.8rem;box-shadow:0 0 30px rgba(255,215,0,.12)}
 .cc-hdr{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--gdim);
   letter-spacing:.12em;margin-bottom:1.2rem;display:flex;justify-content:space-between}
 .cc-row{display:flex;gap:1.1rem;align-items:flex-start;margin-bottom:1.1rem}
@@ -57,14 +57,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 .cc-info{flex:1}
 .cc-name{font-family:'Press Start 2P',monospace;font-size:clamp(.5rem,1.8vw,.7rem);
   color:var(--gold);margin-bottom:.4rem;line-height:1.8}
-.cc-class{font-size:.78rem;color:var(--pl);margin-bottom:.3rem;font-weight:600}
-.cc-flags{font-size:1rem}
+.cc-class{font-size:.9rem;color:var(--pl);margin-bottom:.3rem;font-weight:600}
+.cc-flags{font-size:1.3rem}
 .cc-div{height:1px;background:var(--border);margin:.9rem 0}
 .stat{margin-bottom:.65rem}
 .stat-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.28rem}
-.stat-lbl{font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--text);letter-spacing:.04em}
-.stat-note{font-size:.6rem;color:var(--muted);font-style:italic}
-.stat-bar{height:10px;background:var(--border);overflow:hidden}
+.stat-lbl{font-family:'Press Start 2P',monospace;font-size:.5rem;color:var(--text);letter-spacing:.04em}
+.stat-note{font-size:.72rem;color:var(--muted);font-style:italic}
+.stat-bar{height:13px;background:var(--border);overflow:hidden}
 .stat-fill{height:100%;width:0;transition:width 1s ease;position:relative}
 .stat-fill::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent 8px,rgba(0,0,0,.2) 8px,rgba(0,0,0,.2) 10px)}
 .sf-gold{background:var(--gold)}.sf-red{background:var(--red)}
@@ -206,7 +206,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 .btn:hover{color:var(--bg)}.btn:hover::before{opacity:1}
 .btn-p{border-color:var(--pl);color:var(--pl)}.btn-p::before{background:var(--pl)}.btn-p:hover{color:var(--bg)}
 .btn-r{border-color:var(--red);color:var(--red)}.btn-r::before{background:var(--red)}.btn-r:hover{color:#fff}
-@media(max-width:400px){.cc-photo{width:72px;height:72px}}
+@media(max-width:480px){.cc-photo{width:96px;height:96px}}
 </style>
 </head>
 <body>
