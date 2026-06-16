@@ -39,7 +39,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .char-card{background:var(--card);border:2px solid var(--gold);max-width:540px;width:100%;padding:1.8rem;box-shadow:0 0 30px rgba(255,215,0,.12)}
 .cc-hdr{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--gdim);letter-spacing:.12em;margin-bottom:1.2rem;display:flex;justify-content:space-between}
 .cc-row{display:flex;gap:1.1rem;align-items:flex-start;margin-bottom:1.1rem}
-.cc-photo{width:120px;height:120px;border:2px solid var(--gold);background:#1a1f35;display:flex;align-items:center;justify-content:center;font-size:2.6rem;flex-shrink:0;overflow:hidden}
+.cc-photo{width:160px;height:160px;border:2px solid var(--gold);background:#1a1f35;display:flex;align-items:center;justify-content:center;font-size:2.6rem;flex-shrink:0;overflow:hidden}
 .cc-photo img{width:100%;height:100%;object-fit:cover;object-position:center top}
 .cc-info{flex:1}
 .cc-name{font-family:'Press Start 2P',monospace;font-size:clamp(.65rem,2vw,.9rem);color:var(--gold);margin-bottom:.4rem;line-height:1.8}
@@ -157,7 +157,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .btn:hover{color:var(--bg)}.btn:hover::before{opacity:1}
 .btn-p{border-color:var(--pl);color:var(--pl)}.btn-p::before{background:var(--pl)}.btn-p:hover{color:var(--bg)}
 .btn-r{border-color:var(--red);color:var(--red)}.btn-r::before{background:var(--red)}.btn-r:hover{color:#fff}
-@media(max-width:480px){.cc-photo{width:96px;height:96px}.dlg-port{width:160px;height:113px}}
+@media(max-width:480px){.cc-photo{width:130px;height:130px}.dlg-port{width:160px;height:113px}}
 </style>
 </head>
 <body>
@@ -550,7 +550,7 @@ function openZone(id){
 function renderDlg(step){
   const line=ZD[G.activeZone].dlg[step];
   const port=document.getElementById('dlg-port'),spk=document.getElementById('dlg-spk');
-  const _pk=PORTRAITS[line.w];if(_pk&&IMGS[_pk]){port.innerHTML='<img src="'+IMGS[_pk]+'" style="width:100%;height:100%;object-fit:cover;object-position:center 20%;">';port.className='dlg-port'+(line.pur?' pur':'');}else{port.textContent=line.p;port.className='dlg-port'+(line.pur?' pur':'');}
+  const _pk=PORTRAITS[line.w];if(_pk&&IMGS[_pk]){port.innerHTML='<img src="'+IMGS[_pk]+'" style="width:100%;height:100%;object-fit:cover;object-position:center top;">';port.className='dlg-port'+(line.pur?' pur':'');}else{port.textContent=line.p;port.className='dlg-port'+(line.pur?' pur':'');}
   spk.textContent=line.w;spk.className='dlg-spk'+(line.pur?' pur':'');
   const txt=document.getElementById('dlg-txt');txt.textContent='';
   let i=0;clearInterval(window._tv);
