@@ -238,7 +238,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
       <div class="zd">&#127866;</div><div class="zchk">&#10003;</div><div class="zlck">&#128274;</div>
       <div class="zlbl">DIVE BAR<br>DUNGEON</div>
     </div>
-    <div class="zn locked" id="z-hq" style="left:46%;top:67%" onclick="openZone('hq')">
+    <div class="zn locked" id="z-jacs" style="left:68%;top:67%" onclick="openZone('jacs')">
+      <div class="zd">&#127862;</div><div class="zchk">&#10003;</div><div class="zlck">&#128274;</div>
+      <div class="zlbl">JACS<br>ON BOND</div>
+    </div>
+        <div class="zn locked" id="z-hq" style="left:46%;top:67%" onclick="openZone('hq')">
       <div class="zd">&#128250;</div><div class="zchk">&#10003;</div><div class="zlck">&#128274;</div>
       <div class="zlbl">NIGHT<br>IN HQ</div>
     </div>
@@ -352,10 +356,10 @@ function advCin(){if(!cinReady)return;flash(()=>{show('char');setTimeout(animSta
 function animStats(){document.querySelectorAll('.stat-fill').forEach(b=>{b.style.width=b.dataset.w})}
 function beginMission(){flash(()=>{show('map');setTimeout(()=>{drawPaths();updateMap()},130)})}
 
-const G={xp:0,lTasks:[false,false,false,false,false,false],lDone:false,order:['base','feed','bar','hq','wv','beacon','feast'],visited:new Set(),activeZone:null,dStep:0};
+const G={xp:0,lTasks:[false,false,false,false,false,false],lDone:false,order:['base','feed','bar','jacs','hq','wv','beacon','feast'],visited:new Set(),activeZone:null,dStep:0};
 const LXP=[50,50,75,75,75,100];
-const POS={london:{x:.16,y:.14},base:{x:.50,y:.30},feed:{x:.24,y:.48},bar:{x:.70,y:.52},hq:{x:.46,y:.67},wv:{x:.30,y:.26},beacon:{x:.80,y:.22},feast:{x:.54,y:.83}};
-const PORD=[['london','base'],['base','feed'],['feed','bar'],['bar','hq'],['hq','wv'],['wv','beacon'],['beacon','feast']];
+const POS={london:{x:.16,y:.14},base:{x:.50,y:.30},feed:{x:.24,y:.48},bar:{x:.70,y:.52},jacs:{x:.68,y:.67},hq:{x:.46,y:.67},wv:{x:.30,y:.26},beacon:{x:.80,y:.22},feast:{x:.54,y:.83}};
+const PORD=[['london','base'],['base','feed'],['feed','bar'],['bar','jacs'],['jacs','hq'],['hq','wv'],['wv','beacon'],['beacon','feast']];
 
 function updateMap(){
   const lz=document.getElementById('z-london');
@@ -436,6 +440,13 @@ const ZD={
     {w:'LAPO',p:'\u{1F4AC}',t:"No. This IS the nice place. Simple Guy energy, remember?"},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"...okay I actually love it here."},
     {w:'LAPO',p:'\u{1F4AC}',t:"I know you do."},
+  ]},
+  jacs:{name:"JACS ON BOND",icon:'\u{1F378}',day:'Day 1 · Late Night',xp:100,img:null,dlg:[
+    {w:'LAPO',p:'\u{1F4AC}',t:"One more stop. Jacs on Bond. Proper cocktail bar. Different energy from the dive."},
+    {w:'KWASI',p:'\u{1F642}',pur:true,t:"Actually this is exactly what I needed after that last place."},
+    {w:'LAPO',p:'\u{1F4AC}',t:"I know. That is why we are here."},
+    {w:'KWASI',p:'\u{1F642}',pur:true,t:"You have suspiciously good taste."},
+    {w:'LAPO',p:'\u{1F4AC}',t:"Suspiciously? It is just taste. Drink your drink."},
   ]},
   hq:{name:'NIGHT IN HQ',icon:'\u{1F4FA}',day:'Day 1 · Late Night',xp:75,img:null,dlg:[
     {w:'LAPO',p:'\u{1F4AC}',t:"Night In HQ. TV. Snacks. McFlurry if you behave."},
