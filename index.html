@@ -645,11 +645,11 @@ function drawPaths(){
 
 // ── TRANSIT ANIMATIONS (one-shot) ──
 const TRANSIT_CFG={
-  'london,base':{icon:'✈',dur:4,rotate:true},
-  'brooklyn,gct':{icon:'🚇',dur:2.5},
-  'gct,beacon':{icon:'🚂',dur:3},
-  'beacon,gct':{icon:'🚂',dur:3},
-  'gct,wv':{icon:'🚶',dur:2},
+  'london,base':{icon:'✈',dur:8,rotate:true},
+  'brooklyn,gct':{icon:'🚇',dur:5},
+  'gct,beacon':{icon:'🚂',dur:6},
+  'beacon,gct':{icon:'🚂',dur:6},
+  'gct,wv':{icon:'🚶',dur:4},
 };
 function getTransitSeq(from,to){
   if(from==='brooklyn'&&to==='beacon')return [['brooklyn','gct'],['gct','beacon']];
@@ -662,7 +662,7 @@ function animateTransit(from,to){
   (function playNext(i){
     if(i>=seqs.length)return;
     const [a,b]=seqs[i];
-    const cfg=TRANSIT_CFG[a+','+b]||{icon:'🚶',dur:2};
+    const cfg=TRANSIT_CFG[a+','+b]||{icon:'🚶',dur:4};
     playTransitIcon(a,b,cfg,()=>playNext(i+1));
   })(0);
 }
@@ -1053,10 +1053,10 @@ function signTreaty(){flash(()=>{show('victory');confetti();initVictoryPortraits
 function setVictoryCopy(){
   const wvChoice=G.choices.wv;
   const isA=wvChoice==='A';
-  document.getElementById('v-sub').textContent=isA?'And the part I did not put on the map.':'And the part I did not put on the map.';
+  document.getElementById('v-sub').textContent='';
   document.getElementById('v-msg').innerHTML=isA
-    ?'Two days. Every reservation landed.<br>Every stop exactly where it was supposed to be.<br><br>You asked for everything.<br>He said yes to all of it.<br><br>Next time is already forming in his head.<br>You both know it.'
-    :'Two days. Every reservation landed.<br>Every stop exactly where it was supposed to be.<br><br>I am looking forward to seeing you.<br><br>Ha — I am not much of a planner, really.<br>More of a go-with-the-flow kind of guy.<br><br>Let me know if you have any suggestions.<br><br>This is just a simulation.<br>But everything in it is something we can actually do.';
+    ?'You asked for everything.<br>He said yes to all of it.<br><br>Next time is already forming in his head.<br>You both know it.'
+    :'Ha, I am not much of a planner, really.<br>More of a go-with-the-flow kind of guy.<br><br>Let me know if you have any suggestions.<br><br>This is just a simulation.<br>But everything in it is something we can actually do.';
 }
 // ── EASTER EGG ──
 (function(){
