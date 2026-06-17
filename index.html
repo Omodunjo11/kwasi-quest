@@ -106,7 +106,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .map-vp{flex:1;position:relative;overflow:hidden}
 .map-bg{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0,transparent 39px,rgba(255,255,255,.025) 39px,rgba(255,255,255,.025) 40px),repeating-linear-gradient(90deg,transparent 0,transparent 39px,rgba(255,255,255,.025) 39px,rgba(255,255,255,.025) 40px),radial-gradient(ellipse at 15% 75%,rgba(0,20,50,.7) 0%,transparent 45%),radial-gradient(ellipse at 85% 20%,rgba(40,0,80,.5) 0%,transparent 45%),var(--navy)}
 .map-lbl{position:absolute;font-family:'Press Start 2P',monospace;font-size:.33rem;color:rgba(255,255,255,.12);pointer-events:none;letter-spacing:.1em;text-transform:uppercase}
-#map-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.mp-hit{pointer-events:all;cursor:pointer}
+#map-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .zn{position:absolute;transform:translate(-50%,-50%);cursor:pointer;z-index:5;display:flex;flex-direction:column;align-items:center}
 .zd{width:64px;height:64px;border-radius:50%;border:2px solid var(--gold);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:1.3rem;position:relative;transition:all .2s;overflow:hidden}
 .zd-photo{font-size:0;padding:0}
@@ -621,8 +621,7 @@ function updateMap(){
 
 function drawPaths(){
   const svg=document.getElementById('map-svg'),vp=document.getElementById('map-vp');
-  svg.querySelectorAll('.mp,.mp-hit').forEach(p=>p.remove());
-  svg.style.pointerEvents='none';
+  svg.querySelectorAll('.mp').forEach(p=>p.remove());
   const W=vp.offsetWidth,H=vp.offsetHeight;if(!W||!H)return;
   const NS='http://www.w3.org/2000/svg';
   const gctActive=G.visited.has('brooklyn')||G.visited.has('beacon');
@@ -641,24 +640,6 @@ function drawPaths(){
     p.setAttribute('stroke-width','2');p.setAttribute('stroke-dasharray',active?'8 5':'4 6');
     p.classList.add('mp');if(active)p.style.animation='mpath 1.8s linear infinite';
     svg.appendChild(p);
-    // Invisible wide hit area for easier clicking
-    if(active){
-      const destId=b==='gct'?null:b;
-      if(destId&&ZD[destId]){
-        const hit=document.createElementNS(NS,'path');
-        hit.setAttribute('d',d);hit.setAttribute('fill','none');
-        hit.setAttribute('stroke','rgba(0,0,0,0.01)');hit.setAttribute('stroke-width','28');
-        hit.classList.add('mp-hit');
-        hit.style.cursor='pointer';
-        hit.addEventListener('click',()=>{
-          const dest=document.getElementById('z-'+destId);
-          if(dest&&!dest.classList.contains('locked')&&!dest.classList.contains('done'))openZone(destId);
-          else if(dest&&dest.classList.contains('locked'))toast('Complete previous quests first.');
-        });
-        svg.style.pointerEvents='all';
-        svg.appendChild(hit);
-      }
-    }
   });
 }
 
