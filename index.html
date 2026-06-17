@@ -406,7 +406,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
       <div class="zd">&#127862;</div><div class="zchk">&#10003;</div><div class="zlck">&#128274;</div>
       <div class="zlbl">JACS<br>ON BOND</div>
     </div>
-        <div class="zn locked" id="z-brooklyn" data-vibe="EASY" style="left:20%;top:55%" onclick="openZone('brooklyn')">
+        <div class="map-transit" id="gct-marker" style="left:46%;top:41%;position:absolute;text-align:center;pointer-events:none;opacity:0;transition:opacity .6s">
+      <div style="font-size:.9rem">🚉</div>
+      <div style="font-size:.45rem;font-family:-apple-system,sans-serif;color:rgba(255,215,0,.7);letter-spacing:.05em;margin-top:2px">GCT</div>
+    </div>
+    <div class="zn locked" id="z-brooklyn" data-vibe="EASY" style="left:20%;top:55%" onclick="openZone('brooklyn')">
       <div class="zd">&#9749;</div><div class="zchk">&#10003;</div><div class="zlck">&#128274;</div>
       <div class="zlbl">BROOKLYN<br>MORNING</div>
     </div>
@@ -561,10 +565,10 @@ function advCin(){if(!cinReady||!document.getElementById('cin').classList.contai
 function animStats(){document.querySelectorAll('.stat-fill').forEach(b=>{b.style.width=b.dataset.w})}
 function beginMission(){flash(()=>{show('map');setTimeout(()=>{drawPaths();updateMap()},130)})}
 
-const G={xp:0,lTasks:[false,false,false,false,false,false],lDone:false,order:['base','feed','bar','jacs','hq','brooklyn','beacon','wv','feast'],visited:new Set(),activeZone:null,dStep:0,dPhase:'main',choices:{},heart:0};
+const G={xp:0,lTasks:[false,false,false,false,false,false],lDone:false,order:['base','feed','bar','jacs','hq','brooklyn','beacon','wv','feast'],visited:new Set(),activeZone:null,lastZone:null,dStep:0,dPhase:'main',choices:{},heart:0};
 const LXP=[50,50,75,75,75,100];
-const POS={london:{x:.16,y:.14},base:{x:.50,y:.30},feed:{x:.24,y:.48},bar:{x:.70,y:.52},jacs:{x:.68,y:.67},hq:{x:.46,y:.67},brooklyn:{x:.20,y:.55},beacon:{x:.80,y:.22},wv:{x:.28,y:.76},feast:{x:.54,y:.83}};
-const PORD=[['london','base'],['base','feed'],['feed','bar'],['bar','jacs'],['jacs','hq'],['hq','brooklyn'],['brooklyn','beacon'],['beacon','wv'],['wv','feast']];
+const POS={london:{x:.16,y:.14},base:{x:.50,y:.30},feed:{x:.24,y:.48},bar:{x:.70,y:.52},jacs:{x:.68,y:.67},hq:{x:.46,y:.67},brooklyn:{x:.20,y:.55},gct:{x:.46,y:.41},beacon:{x:.80,y:.22},wv:{x:.28,y:.76},feast:{x:.54,y:.83}};
+const PORD=[['london','base'],['base','feed'],['feed','bar'],['bar','jacs'],['jacs','hq'],['hq','brooklyn'],['brooklyn','gct'],['gct','beacon'],['beacon','gct'],['gct','wv'],['wv','feast']];
 
 // ── AMBIENT ──
 let _ambCtx=null,_ambNodes=[];
@@ -610,20 +614,23 @@ function updateMap(){
   });
   document.getElementById('hud-xp').textContent='XP: '+G.xp;
   document.getElementById('hud-ch').textContent=G.lDone?'CH.1 \u00b7 NYC':'CH.0 \u00b7 LONDON';
+  const gctEl=document.getElementById('gct-marker');if(gctEl)gctEl.style.opacity=(G.visited.has('brooklyn')||G.visited.has('beacon'))?'1':'0';
   drawPaths();
   if(G.order.every(z=>G.visited.has(z)))setTimeout(()=>{document.getElementById('treaty-badge').style.display='block';toast('ALL ZONES COMPLETE. THE TREATY AWAITS.')},400);
 }
 
 function drawPaths(){
   const svg=document.getElementById('map-svg'),vp=document.getElementById('map-vp');
-  svg.querySelectorAll('.mp,.mt').forEach(p=>p.remove());
+  svg.querySelectorAll('.mp').forEach(p=>p.remove());
   const W=vp.offsetWidth,H=vp.offsetHeight;if(!W||!H)return;
   const NS='http://www.w3.org/2000/svg';
-  const TRAVEL={'london,base':'✈','brooklyn,beacon':'🚂'};
+  const gctActive=G.visited.has('brooklyn')||G.visited.has('beacon');
   PORD.forEach(([a,b])=>{
-    const pa=POS[a],pb=POS[b],x1=pa.x*W,y1=pa.y*H,x2=pb.x*W,y2=pb.y*H;
-    const active=(a==='london'&&G.lDone)||G.visited.has(a);
+    const pa=POS[a],pb=POS[b];if(!pa||!pb)return;
+    const x1=pa.x*W,y1=pa.y*H,x2=pb.x*W,y2=pb.y*H;
     const isFL=a==='london'&&b==='base';
+    const isGct=a==='gct'||b==='gct';
+    const active=isGct?gctActive:((a==='london'&&G.lDone)||G.visited.has(a));
     const pid='mp-'+a+'-'+b;
     const p=document.createElementNS(NS,'path');
     const cx=(x1+x2)/2,cy=isFL?Math.min(y1,y2)-H*.18:(y1+y2)/2;
@@ -633,21 +640,56 @@ function drawPaths(){
     p.setAttribute('stroke-width','2');p.setAttribute('stroke-dasharray',active?'8 5':'4 6');
     p.classList.add('mp');if(active)p.style.animation='mpath 1.8s linear infinite';
     svg.appendChild(p);
-    if(active){
-      const mode=TRAVEL[a+','+b]||'🚶';
-      const dur=isFL?'5s':(a==='brooklyn'&&b==='beacon')?'3.5s':'2.5s';
-      const t=document.createElementNS(NS,'text');
-      t.textContent=mode;
-      t.setAttribute('font-size','18');t.setAttribute('text-anchor','middle');
-      t.setAttribute('dominant-baseline','middle');t.classList.add('mt');
-      const am=document.createElementNS(NS,'animateMotion');
-      am.setAttribute('dur',dur);am.setAttribute('repeatCount','indefinite');
-      if(isFL)am.setAttribute('rotate','auto');
-      const mp=document.createElementNS(NS,'mpath');
-      mp.setAttribute('href','#'+pid);
-      am.appendChild(mp);t.appendChild(am);svg.appendChild(t);
-    }
   });
+}
+
+// ── TRANSIT ANIMATIONS (one-shot) ──
+const TRANSIT_CFG={
+  'london,base':{icon:'✈',dur:4,rotate:true},
+  'brooklyn,gct':{icon:'🚇',dur:2.5},
+  'gct,beacon':{icon:'🚂',dur:3},
+  'beacon,gct':{icon:'🚂',dur:3},
+  'gct,wv':{icon:'🚶',dur:2},
+};
+function getTransitSeq(from,to){
+  if(from==='brooklyn'&&to==='beacon')return [['brooklyn','gct'],['gct','beacon']];
+  if(from==='beacon'&&to==='wv')return [['beacon','gct'],['gct','wv']];
+  return [[from,to]];
+}
+function animateTransit(from,to){
+  if(!from||!to||from===to)return;
+  const seqs=getTransitSeq(from,to);
+  (function playNext(i){
+    if(i>=seqs.length)return;
+    const [a,b]=seqs[i];
+    const cfg=TRANSIT_CFG[a+','+b]||{icon:'🚶',dur:2};
+    playTransitIcon(a,b,cfg,()=>playNext(i+1));
+  })(0);
+}
+function playTransitIcon(from,to,cfg,onDone){
+  const svg=document.getElementById('map-svg'),vp=document.getElementById('map-vp');
+  const W=vp.offsetWidth,H=vp.offsetHeight;if(!W||!H)return onDone&&onDone();
+  const pa=POS[from],pb=POS[to];if(!pa||!pb)return onDone&&onDone();
+  const NS='http://www.w3.org/2000/svg';
+  const x1=pa.x*W,y1=pa.y*H,x2=pb.x*W,y2=pb.y*H;
+  const isFL=from==='london'&&to==='base';
+  const pid='tr-'+from+'-'+to+'-'+Date.now();
+  const guide=document.createElementNS(NS,'path');
+  const cx=(x1+x2)/2,cy=isFL?Math.min(y1,y2)-H*.18:(y1+y2)/2;
+  guide.setAttribute('d',isFL?'M'+x1+','+y1+' Q'+cx+','+cy+' '+x2+','+y2:'M'+x1+','+y1+' L'+x2+','+y2);
+  guide.setAttribute('id',pid);guide.setAttribute('fill','none');guide.setAttribute('stroke','none');
+  svg.appendChild(guide);
+  const t=document.createElementNS(NS,'text');
+  t.textContent=cfg.icon;t.setAttribute('font-size','22');
+  t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+  t.style.transition='opacity 0.5s';t.style.filter='drop-shadow(0 0 4px rgba(255,215,0,.6))';
+  const am=document.createElementNS(NS,'animateMotion');
+  am.setAttribute('dur',cfg.dur+'s');am.setAttribute('repeatCount','1');am.setAttribute('fill','freeze');
+  if(cfg.rotate)am.setAttribute('rotate','auto');
+  const mp=document.createElementNS(NS,'mpath');
+  mp.setAttribute('href','#'+pid);
+  am.appendChild(mp);t.appendChild(am);svg.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>{t.remove();guide.remove();onDone&&onDone();},500);},cfg.dur*1000);
 }
 const _s=document.createElement('style');
 _s.textContent='@keyframes mpath{from{stroke-dashoffset:0}to{stroke-dashoffset:-26}}.mp{stroke-dashoffset:0}';
@@ -877,6 +919,8 @@ function openZone(id){
   const n=document.getElementById('z-'+id);
   if(n.classList.contains('locked')){toast('Complete previous quests first.');return}
   if(n.classList.contains('done')){toast('Zone already explored \u2713');return}
+  const _fromZone=G.lastZone||(G.lDone?'london':null);
+  if(_fromZone)animateTransit(_fromZone,id);
   G.activeZone=id;G.dStep=0;G.dPhase='main';
   const zd=ZD[id];
   if(id==='feast'&&zd.heartLine&&G.heart>=2&&!zd._heartAdded){zd.dlg.splice(2,0,zd.heartLine);zd._heartAdded=true;}
@@ -980,7 +1024,7 @@ function advDlg(){
   G.dStep++;if(G.dStep<lines.length)renderDlg(G.dStep);
 }
 function acceptZone(){
-  const id=G.activeZone,zd=ZD[id];G.visited.add(id);G.xp+=zd.xp;
+  const id=G.activeZone,zd=ZD[id];G.visited.add(id);G.xp+=zd.xp;G.lastZone=id;
   showXP('+'+zd.xp+' XP');document.getElementById('dlg').classList.remove('open');stopAmbient();
   addJournalEntry(id);showPolaroid(id);
   updateMap();
