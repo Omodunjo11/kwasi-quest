@@ -1229,7 +1229,7 @@ function generateShareCard(){
   ctx.fillText('JUNE 23 – 25, 2026  ·  NEW YORK CITY',400,76);
   ctx.fillStyle='rgba(255,215,0,.15)';ctx.fillRect(14,90,772,2);
   const zones=['base','feed','bar','jacs','hq','brooklyn','beacon','wv','feast'];
-  const zlabels=['The Landing Zone','Fish Cheeks','Milano's Bar','Jacs on Bond','Night In HQ','Brooklyn Morning','The Beacon Mission','Rosemary's','Night Out'];
+  const zlabels=["The Landing Zone","Fish Cheeks","Milano's Bar","Jacs on Bond","Night In HQ","Brooklyn Morning","The Beacon Mission","Rosemary's","Night Out"];
   ctx.textAlign='left';
   zones.forEach((z,i)=>{
     const done=G.visited.has(z);
