@@ -744,6 +744,8 @@ function renderDlg(step){
   txt.className='dlg-txt'+(line.stage?' dlg-stage':'');
   if(line.callback&&G.choices.base==='B')txt.classList.add('dlg-callback');
   txt.textContent='';
+  document.getElementById('dlg-cont').style.display='block';
+  document.getElementById('dlg-accept').style.display='none';
   const isLast=step===lines.length-1;
   let i=0;clearInterval(window._tv);
   window._tv=setInterval(()=>{txt.textContent=line.t.slice(0,++i);
