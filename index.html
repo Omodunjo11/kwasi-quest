@@ -156,7 +156,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 #dlg{position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(5,8,16,.97);border-top:2px solid var(--gold);transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)}
 #dlg.open{transform:translateY(0)}
 .dlg-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:.8rem;margin-bottom:.65rem}
-.dlg-img{width:220px;height:155px;object-fit:cover;object-position:center 40%;display:none;border:1px solid var(--border);flex-shrink:0}
+.dlg-img{width:220px;height:155px;object-fit:cover;object-position:center 40%;display:none;border:1px solid var(--border);flex-shrink:0;filter:blur(8px) brightness(.4);transition:filter .9s ease}
 .dlg-body{padding:.9rem 1.1rem 1.2rem}
 .dlg-zt{font-family:'Press Start 2P',monospace;font-size:clamp(.4rem,1.3vw,.52rem);color:var(--gdim);line-height:1.8;flex:1}
 .dlg-row{display:flex;align-items:flex-end;gap:.7rem;margin-bottom:.6rem}
@@ -175,8 +175,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .dlg-choice-btn{flex:1;padding:.6rem .55rem;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:4px;color:var(--fg);font-family:inherit;font-size:.82rem;cursor:pointer;text-align:left;line-height:1.4;transition:border-color .15s,background .15s}
 .dlg-choice-btn:hover{border-color:rgba(255,215,0,.55);background:rgba(255,215,0,.05)}
 .dlg-stage{color:var(--muted);font-style:italic}
+.swipe-hint{position:absolute;right:.8rem;bottom:.5rem;font-size:.6rem;color:rgba(255,255,255,.12);pointer-events:none;animation:blink 2s step-end infinite}
 .dlg-callback{animation:callback-flash .6s ease}
 @keyframes callback-flash{0%,100%{opacity:1}40%{opacity:.25}}
+
+/* JOURNAL */
+#journal-btn{position:fixed;top:.9rem;right:3.5rem;z-index:90;font-size:1.3rem;cursor:pointer;opacity:0;transition:opacity .3s;filter:drop-shadow(0 0 6px rgba(255,215,0,.4))}
+#journal-btn.vis{opacity:1}
+#journal-panel{position:fixed;inset:0;z-index:300;background:rgba(5,8,16,.96);display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:2rem 1.5rem 4rem;opacity:0;pointer-events:none;transition:opacity .3s}
+#journal-panel.open{opacity:1;pointer-events:all}
+.jrnl-hdr{font-family:'Press Start 2P',monospace;font-size:clamp(.5rem,1.8vw,.72rem);color:var(--gold);text-align:center;margin-bottom:.4rem;line-height:2}
+.jrnl-close{position:absolute;top:1.2rem;right:1.2rem;font-size:1.3rem;cursor:pointer;color:var(--muted)}
+.jrnl-entry{max-width:480px;width:100%;background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);padding:.9rem 1.1rem;margin-bottom:.7rem;text-align:left}
+.jrnl-entry.pur{border-left-color:var(--pl)}
+.jrnl-zone{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gdim);margin-bottom:.35rem;line-height:2}
+.jrnl-mem{font-size:.82rem;color:var(--text);line-height:1.6;font-style:italic}
 
 /* TREATY */
 #treaty{position:fixed;inset:0;z-index:10;opacity:0;pointer-events:none;transition:opacity .5s;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:3rem 1.5rem 5rem}
@@ -215,6 +228,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 #sig-svg text{fill:var(--gold);clip-path:inset(0 100% 0 0)}
 #sig-svg text.signing{animation:sigReveal 1.3s cubic-bezier(.25,0,.2,1) forwards}
 .cbit{position:fixed;top:-20px;pointer-events:none;z-index:9997;animation:cfall linear forwards}
+.rxn{position:fixed;pointer-events:none;z-index:9998;font-size:2rem;animation:rxnpop 1.6s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes rxnpop{0%{opacity:0;transform:translateY(0) scale(.5)}20%{opacity:1;transform:translateY(-20px) scale(1.3)}70%{opacity:1;transform:translateY(-80px) scale(1)}100%{opacity:0;transform:translateY(-130px) scale(.8)}}
 @keyframes cfall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
 .btn{font-family:'Press Start 2P',monospace;font-size:clamp(.44rem,1.5vw,.6rem);padding:.8rem 1.5rem;border:2px solid var(--gold);background:transparent;color:var(--gold);cursor:pointer;position:relative;letter-spacing:.04em;line-height:1.6}
 .binn{position:relative;z-index:1}
@@ -392,6 +407,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 </div>
 
 <!-- CHAPTER COMPLETE -->
+<div id="journal-btn" title="Journal" onclick="openJournal()">&#128214;</div>
+<div id="journal-panel">
+  <span class="jrnl-close" onclick="closeJournal()">&#10005;</span>
+  <div class="jrnl-hdr">&#128214; FIELD NOTES</div>
+  <div id="jrnl-entries"></div>
+</div>
+
 <div id="ch-complete">
   <div class="ccc-title">CHAPTER 0<br>COMPLETE!</div>
   <div class="ccc-sub">London objectives: all fulfilled.</div>
@@ -424,7 +446,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
         <button class="dlg-choice-btn" id="dlg-choiceB" onclick="makeChoice('B')"></button>
       </div>
     </div>
-    <div class="dlg-foot">
+    <div class="swipe-hint" id="swipe-hint">swipe &#8592;</div><div class="dlg-foot">
       <button class="btn btn-p" id="dlg-accept" onclick="acceptZone()" style="display:none"><span class="binn">QUEST ACCEPTED &#10003;</span></button>
       <div class="dlg-cont" id="dlg-cont" onclick="advDlg()">&#9654; CONTINUE</div>
     </div>
@@ -634,7 +656,7 @@ const ZD={
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"You planned a dive bar."},
     {w:'LAPO',p:'\u{1F4AC}',t:"I planned everything. The dive bar is intentional."},
   ]},
-  jacs:{name:"JACS ON BOND",icon:'\u{1F378}',day:'Day 1 · Late Night',xp:100,img:'jacs',dlg:[
+  jacs:{carryoverLine:{w:'LAPO',p:'\u{1F4AC}',t:"You have been this way since the airport. Quiet. Unbothered. I like it."},name:"JACS ON BOND",icon:'\u{1F378}',day:'Day 1 · Late Night',xp:100,img:'jacs',dlg:[
     {w:'LAPO',p:'\u{1F4AC}',t:"One more stop. Jacs on Bond. Different energy. Better for talking."},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"Actually this is exactly what I needed after that last place."},
     {w:'LAPO',p:'\u{1F4AC}',t:"I know."},
@@ -662,8 +684,8 @@ const ZD={
       {w:'LAPO',p:'\u{1F4AC}',t:"I am not recovering. I am redirecting. There is a difference."},
       {w:'KWASI',p:'\u{1F642}',pur:true,t:"There is not."},
       {w:'LAPO',p:'\u{1F4AC}',t:"*(quietly)* No. There is not.",stage:true},
-      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Take off your pants."},
-      {w:'LAPO',p:'\u{1F4AC}',t:"Already off!"},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Take off your pants.",rxn:['\uD83C\uDF51','\uD83E\uDD52']},
+      {w:'LAPO',p:'\u{1F4AC}',t:"Already off!",rxn:['\uD83E\uDD52','\uD83C\uDF51','\uD83E\uDD52']},
     ],
     pathB:[
       {w:'LAPO',p:'\u{1F4AC}',t:"You are not going to say anything."},
@@ -684,7 +706,7 @@ const ZD={
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"You said I could lead."},
     {w:'LAPO',p:'\u{1F4AC}',t:"I said you could ask three questions. That was not a question. Follow."},
   ]},
-  wv:{name:"ROSEMARY'S",icon:'\u{1F35D}',day:'Day 2 · Evening',xp:125,img:'wv',dlg:[
+  wv:{carryoverLine:{w:'LAPO',p:'\u{1F4AC}',t:"You have been like that all weekend. Quiet when it matters. I noticed."},name:"ROSEMARY'S",icon:'\u{1F35D}',day:'Day 2 · Evening',xp:125,img:'wv',dlg:[
     {w:'LAPO',p:'\u{1F4AC}',t:"Rosemary's. West Village. Debrief dinner. Proper Italian and we talk about the two days."},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"You were not joking about the food situation."},
     {w:'LAPO',p:'\u{1F4AC}',t:"I never joke about food. Get the pappardelle."},
@@ -706,8 +728,8 @@ const ZD={
       {w:'KWASI',p:'\u{1F642}',pur:true,t:"Tell me."},
       {w:'LAPO',p:'\u{1F4AC}',t:"*(beat)* Not here.",stage:true,beat:1500},
       {w:'KWASI',p:'\u{1F642}',pur:true,t:"Then when?"},
-      {w:'LAPO',p:'\u{1F4AC}',t:"I cannot wait to see you naked again."},
-      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Oh, you know I am ready."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"I cannot wait to see you naked again.",rxn:['\uD83C\uDF51','\uD83C\uDF51','\uD83E\uDD52']},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Oh, you know I am ready.",rxn:['\uD83E\uDD52','\uD83C\uDF51']},
       {w:'LAPO',p:'\u{1F4AC}',t:"Haha, love that."},
     ],
     pathB:[
@@ -764,12 +786,19 @@ function openZone(id){
   G.activeZone=id;G.dStep=0;G.dPhase='main';
   const zd=ZD[id];
   if(id==='feast'&&zd.heartLine&&G.heart>=2&&!zd._heartAdded){zd.dlg.splice(2,0,zd.heartLine);zd._heartAdded=true;}
+  if(id==='wv'&&zd.carryoverLine&&G.choices.hq==='B'&&!zd._carryAdded){
+    const cbIdx=zd.dlg.findIndex(l=>l.callback);
+    if(cbIdx>=0){zd.dlg.splice(cbIdx+1,0,zd.carryoverLine);zd._carryAdded=true;}
+  }
+  if(id==='jacs'&&zd.carryoverLine&&G.choices.base==='B'&&!zd._carryAdded){
+    zd.dlg.splice(3,0,zd.carryoverLine);zd._carryAdded=true;
+  }
   document.getElementById('dlg-zt').textContent=zd.icon+' '+zd.name+' \u00b7 '+zd.day;
   document.getElementById('dlg-accept').style.display='none';
   document.getElementById('dlg-cont').style.display='block';
   document.getElementById('dlg-choices').style.display='none';
   const img=document.getElementById('dlg-img');
-  if(zd.img&&IMGS[zd.img]){img.src=IMGS[zd.img];img.style.display='block';img.style.objectPosition=IMG_CROP[zd.img]||'center 40%'}
+  if(zd.img&&IMGS[zd.img]){img.src=IMGS[zd.img];img.style.display='block';img.style.objectPosition=IMG_CROP[zd.img]||'center 40%';revealPhoto(img);}
   else{img.style.display='none';img.src=''}
   renderDlg(0);document.getElementById('dlg').classList.add('open');
 }
@@ -794,6 +823,7 @@ function renderDlg(step){
   let i=0;clearInterval(window._tv);
   window._tv=setInterval(()=>{txt.textContent=line.t.slice(0,++i);
     if(i>=line.t.length){clearInterval(window._tv);
+      if(line.rxn)fireRxn(line.rxn);
       if(line.beat){
         document.getElementById('dlg-cont').style.display='none';
         window._beatTimer=setTimeout(()=>{
@@ -849,7 +879,9 @@ function advDlg(){
 }
 function acceptZone(){
   const id=G.activeZone,zd=ZD[id];G.visited.add(id);G.xp+=zd.xp;
-  showXP('+'+zd.xp+' XP');document.getElementById('dlg').classList.remove('open');updateMap();
+  showXP('+'+zd.xp+' XP');document.getElementById('dlg').classList.remove('open');
+  addJournalEntry(id);
+  updateMap();
 }
 
 function goTreaty(){flash(()=>show('treaty'))}
@@ -917,6 +949,64 @@ document.addEventListener('keydown',e=>{
   if(e.target.closest('input,textarea,select,[contenteditable]'))return;
   e.preventDefault();e.stopPropagation();devSkipStage();
 },true);
+
+// ── SWIPE GESTURES ──
+(function(){
+  let sx=0,sy=0;
+  const dlg=document.getElementById('dlg');
+  dlg.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+  dlg.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40){
+      if(dx<0){const cb=document.getElementById('dlg-cont');if(cb.style.display!=='none')advDlg();}
+    }
+  },{passive:true});
+})();
+
+// ── JOURNAL ──
+const JOURNAL_MEMS={
+  base:{zone:'THE LANDING ZONE',pur:false,text:"He was waiting at the door before I even texted. The city smelled like summer and possibility. I had the whole thing planned. He did not ask where we were going. That said more than any question would have."},
+  feed:{zone:'FISH CHEEKS',pur:false,text:"Crab curry for two. He already knew the order. I cannot decide if that is sweet or annoying. It is definitely both. The restaurant was loud and the conversation was louder. Good loud."},
+  bar:{zone:"MILANO'S BAR",pur:false,text:"A proper dive bar on a warm night. He expected somewhere nicer. He left loving it. That is the thing about him — you just have to trust the plan and wait for the turn."},
+  jacs:{zone:'JACS ON BOND',pur:false,text:"Better for talking. That was the whole point of Jacs. He said I have suspiciously good taste. I just pay attention. To him, mostly."},
+  hq:{zone:'NIGHT IN HQ',pur:true,text:"McFlurries and the remote and absolutely nothing planned. The best kind of night. He said it was his favourite part. I was not surprised. Neither was I going to tell him I thought so too."},
+  brooklyn:{zone:'BROOKLYN MORNING',pur:false,text:"Coffee and tea and the whole borough just waking up. No itinerary. Just walking. He said it again — this is exactly what I needed. He says that every stop. I am keeping count."},
+  beacon:{zone:'THE BEACON MISSION',pur:false,text:"Dia Beacon with the whole crew. First time for both of us. I have wanted to go for years and somehow waited until now. Turns out the right person to see it with was worth the wait."},
+  wv:{zone:"ROSEMARY'S",pur:false,text:"He said he did not expect the trip to feel like this. Neither did I, honestly. I thought I had it all planned. Turns out you cannot plan the part that matters most."},
+  feast:{zone:'NIGHT OUT',pur:true,text:"Last night. He picked where we went. First time all weekend I let him lead and he did not hesitate for a second. That is new. I noticed."},
+};
+const G_journal=[];
+function addJournalEntry(zoneId){
+  const m=JOURNAL_MEMS[zoneId];if(!m||G_journal.includes(zoneId))return;
+  G_journal.push(zoneId);
+  const btn=document.getElementById('journal-btn');btn.classList.add('vis');
+  const wrap=document.getElementById('jrnl-entries');
+  const div=document.createElement('div');div.className='jrnl-entry'+(m.pur?' pur':'');
+  div.innerHTML='<div class="jrnl-zone">'+m.zone+'</div><div class="jrnl-mem">'+m.text+'</div>';
+  wrap.prepend(div);
+}
+function openJournal(){document.getElementById('journal-panel').classList.add('open')}
+function closeJournal(){document.getElementById('journal-panel').classList.remove('open')}
+
+// ── REACTION EMOJIS ──
+function fireRxn(emojis){
+  emojis.forEach((em,i)=>{
+    setTimeout(()=>{
+      const el=document.createElement('div');el.className='rxn';
+      el.textContent=em;
+      el.style.left=(20+Math.random()*60)+'%';
+      el.style.bottom='35%';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),1700);
+    },i*180);
+  });
+}
+
+// ── PHOTO REVEAL ──
+function revealPhoto(img){
+  img.style.filter='blur(8px) brightness(.4)';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{img.style.filter='blur(0) brightness(1)';}));
+}
 
 initMapPins();
 (function initPhone(){
