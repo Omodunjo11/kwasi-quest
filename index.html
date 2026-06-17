@@ -813,23 +813,21 @@ const ZD={
   ],choice:{
     prompt:"What does Kwasi do?",
     optA:"You are doing terribly.",
-    optB:"*(Stays quiet)*",
+    optB:"*(Smiles)*",
     pathA:[
       {w:'KWASI',p:'\u{1F642}',pur:true,t:"You are doing terribly."},
-      {w:'LAPO',p:'\u{1F4AC}',t:"Awful. Pass the remote."},
-      {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(laughing)* That is your recovery?",stage:true},
-      {w:'LAPO',p:'\u{1F4AC}',t:"I am not recovering. I am redirecting. There is a difference."},
-      {w:'KWASI',p:'\u{1F642}',pur:true,t:"There is not."},
-      {w:'LAPO',p:'\u{1F4AC}',t:"*(quietly)* No. There is not.",stage:true},
-      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Take off your pants.",rxn:['\uD83C\uDF51','\uD83E\uDD52']},
-      {w:'LAPO',p:'\u{1F4AC}',t:"Already off!",rxn:['\uD83E\uDD52','\uD83C\uDF51','\uD83E\uDD52']},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(laughing)* I know. I panicked.",stage:true},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"You literally just said McFlurry."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"It was the first thing that came to mind."},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(laughing)* I like it here.",stage:true,rxn:['\u2728','\u{1F600}']},
+      {w:'LAPO',p:'\u{1F4AC}',t:"Good. That is the whole point.",beat:2200},
     ],
     pathB:[
-      {w:'LAPO',p:'\u{1F4AC}',t:"You are not going to say anything."},
-      {w:'KWASI',p:'\u{1F642}',pur:true,t:"No."},
-      {w:'LAPO',p:'\u{1F4AC}',t:"*(longer beat)* That is worse, for the record.",stage:true,beat:2000},
-      {w:'KWASI',p:'\u{1F642}',pur:true,t:"I know."},
-      {w:'LAPO',p:'\u{1F4AC}',t:"*(quietly, almost to himself)* Yeah. Me too.",stage:true,beat:1800},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(after a moment)* You smiled.",stage:true,beat:1400},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"I always smile."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"Not like that."},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(quietly)* No. Not like that.",stage:true,rxn:['\u{1F970}']},
+      {w:'LAPO',p:'\u{1F4AC}',t:"Exactly.",beat:2000},
     ],
   }},
   brooklyn:{name:'BROOKLYN MORNING',icon:'\u2615',day:'Day 2 · Morning',xp:75,img:'coffee_selfie',dlg:[
@@ -1270,6 +1268,22 @@ initMapPins();
     },msg.me?600:900);
   }
   window._startMsgSequence=function(){setTimeout(nextMsg,400);};
+  window._skipMsgs=function(){
+    if(window._msgSkipTimer)clearTimeout(window._msgSkipTimer);
+    // Dump all remaining messages instantly
+    while(idx<CONV.length){
+      const msg=CONV[idx++];
+      const el=document.createElement('div');
+      el.className='imsg '+(msg.me?'me':'them')+' show';
+      const av=makeAvatar(msg.me);
+      const bub=document.createElement('div');bub.className='imsg-bubble';bub.textContent=msg.text;
+      if(!msg.me)el.appendChild(av);el.appendChild(bub);
+      wrap.appendChild(el);
+    }
+    wrap.scrollTop=wrap.scrollHeight;
+    const tap=document.getElementById('iph-tap');tap.style.opacity='1';
+    window._phoneReady=true;
+  };
 })();
 function phoneLockTap(){
   const lock=document.getElementById('phone-lock');
@@ -1279,6 +1293,7 @@ function phoneLockTap(){
     lock.style.display='none';
     thread.style.display='flex';
     if(window._startMsgSequence)window._startMsgSequence();
+    thread.addEventListener('click',()=>{if(window._skipMsgs&&!window._phoneReady)window._skipMsgs();},{once:true});
   },420);
 }
 function phoneTap(){if(!window._phoneReady)return;if(window._cinStarted)return;window._cinStarted=true;show('cin');runCin();}
