@@ -245,6 +245,30 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   .v-msg{font-size:.78rem;line-height:1.6;margin-bottom:.75rem}
   .v-date{font-size:.4rem;line-height:2.1}
 }
+
+/* COUNTDOWN */
+.ph-lock-countdown{font-family:-apple-system,sans-serif;font-size:.75rem;color:rgba(255,255,255,.45);text-align:center;margin-top:.4rem;letter-spacing:.02em}
+.ph-lock-countdown strong{color:rgba(255,255,255,.8);font-weight:600}
+
+/* TIME PRESSURE */
+.choice-timer-wrap{height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:.6rem;overflow:hidden;display:none}
+.choice-timer-bar{height:100%;background:var(--pl);border-radius:2px;width:100%;transition:none}
+.choice-timer-bar.running{transition:width 30s linear;width:0%}
+.choice-timer-bar.urgent{background:var(--red)}
+
+/* POLAROID */
+#polaroid{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .35s}
+#polaroid.show{opacity:1}
+.pol-card{background:#f5f0e8;padding:10px 10px 36px;box-shadow:0 12px 48px rgba(0,0,0,.7);transform:rotate(-2.5deg) translateY(40px) scale(.88);transition:transform .55s cubic-bezier(.34,1.35,.64,1)}
+#polaroid.show .pol-card{transform:rotate(-2.5deg) translateY(0) scale(1)}
+.pol-img{width:190px;height:150px;object-fit:cover;display:block;object-position:center 20%}
+.pol-caption{font-family:Georgia,serif;font-size:.68rem;color:#444;text-align:center;padding:.55rem .2rem 0;font-style:italic;line-height:1.45}
+
+/* EASTER EGG */
+#egg-overlay{position:fixed;inset:0;z-index:600;background:rgba(5,8,16,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;text-align:center;padding:2rem}
+#egg-overlay.on{opacity:1;pointer-events:all}
+.egg-title{font-family:'Press Start 2P',monospace;font-size:clamp(.6rem,2vw,.88rem);color:var(--pl);line-height:2;margin-bottom:1rem;text-shadow:0 0 20px rgba(167,139,250,.5)}
+.egg-msg{font-size:.95rem;color:var(--text);line-height:1.85;max-width:380px;margin-bottom:1.5rem;white-space:pre-line}
 </style>
 </head>
 <body>
@@ -259,6 +283,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <div class="phone-lock" id="phone-lock" onclick="phoneLockTap()">
       <div class="ph-lock-time" id="ph-lock-time">7:02</div>
       <div class="ph-lock-date" id="ph-lock-date">Wednesday, June 17</div>
+      <div class="ph-lock-countdown" id="ph-lock-countdown"></div>
       <div class="ph-notif">
         <div class="ph-notif-app"><div class="ph-notif-icon">&#128172;</div>Messages &middot; now</div>
         <div class="ph-notif-sender">Lapo</div>
@@ -281,6 +306,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
       <div class="iph-tap" id="iph-tap" style="opacity:0" onclick="phoneTap()">tap to begin &#9654;</div>
     </div>
   </div>
+</div>
+
+<!-- POLAROID -->
+<div id="polaroid">
+  <div class="pol-card">
+    <img class="pol-img" id="pol-img" alt=""/>
+    <div class="pol-caption" id="pol-caption"></div>
+  </div>
+</div>
+
+<!-- EASTER EGG -->
+<div id="egg-overlay" onclick="closeEgg()">
+  <div class="egg-title">&#128373; ACCESS GRANTED</div>
+  <div class="egg-msg" id="egg-msg"></div>
+  <button class="btn btn-p" onclick="closeEgg();event.stopPropagation()"><span class="binn">&#10005; close</span></button>
 </div>
 
 <!-- CINEMATIC -->
@@ -489,7 +529,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   <div class="v-date">OPERATION: NYC &middot; JUNE 23 to 25, 2026<br>&#127468;&#127469; &#127468;&#127463; to &#127482;&#127480;</div>
   
   <div id="wax-seal"><svg width="58" height="58" viewBox="0 0 58 58" xmlns="http://www.w3.org/2000/svg"><circle cx="29" cy="29" r="26" fill="#2a1545" stroke="#7B2FBE" stroke-width="2"/><circle cx="29" cy="29" r="21" fill="none" stroke="rgba(167,139,250,.4)" stroke-width="1" stroke-dasharray="3 2.5"/><text x="29" y="36" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="400" fill="#c084fc" letter-spacing="2" font-style="italic">Lapo</text></svg></div>
-  <button class="btn" style="margin-top:1.5rem" onclick="location.reload()"><span class="binn">&#8617; PLAY AGAIN</span></button>
+  <button class="btn btn-p" style="margin-top:1.5rem" onclick="generateShareCard()"><span class="binn">&#128247; SAVE THE MEMORY</span></button>
+  <button class="btn" style="margin-top:.75rem" onclick="location.reload()"><span class="binn">&#8617; PLAY AGAIN</span></button>
   </div>
 </div>
 
@@ -524,6 +565,39 @@ const G={xp:0,lTasks:[false,false,false,false,false,false],lDone:false,order:['b
 const LXP=[50,50,75,75,75,100];
 const POS={london:{x:.16,y:.14},base:{x:.50,y:.30},feed:{x:.24,y:.48},bar:{x:.70,y:.52},jacs:{x:.68,y:.67},hq:{x:.46,y:.67},brooklyn:{x:.20,y:.55},beacon:{x:.80,y:.22},wv:{x:.28,y:.76},feast:{x:.54,y:.83}};
 const PORD=[['london','base'],['base','feed'],['feed','bar'],['bar','jacs'],['jacs','hq'],['hq','brooklyn'],['brooklyn','beacon'],['beacon','wv'],['wv','feast']];
+
+// ── AMBIENT ──
+let _ambCtx=null,_ambNodes=[];
+function stopAmbient(){
+  if(!_ambCtx)return;
+  _ambNodes.forEach(n=>{try{n.gain.gain.linearRampToValueAtTime(0,_ambCtx.currentTime+.7);
+    setTimeout(()=>{try{if(n.src)n.src.stop();}catch(e){}try{if(n.osc)n.osc.stop();}catch(e){}},800);}catch(e){}});
+  _ambNodes=[];
+}
+function playAmbient(id){
+  stopAmbient();
+  try{
+    _ambCtx=new(window.AudioContext||window.webkitAudioContext)();const ac=_ambCtx;
+    const CFG={feed:{nf:280,nq:2.5,ng:.03,of:58},bar:{nf:130,nq:1.6,ng:.042,of:50},
+      jacs:{nf:340,nq:3,ng:.019,of:110},hq:{nf:900,nq:.5,ng:.011,of:220},
+      brooklyn:{nf:650,nq:1.5,ng:.015},beacon:{nf:480,nq:1.2,ng:.013},
+      wv:{nf:255,nq:2.2,ng:.024,of:82},feast:{nf:120,nq:1.3,ng:.048,of:60}};
+    const cfg=CFG[id];if(!cfg)return;
+    function mkNoise(){const b=ac.createBuffer(1,ac.sampleRate*3,ac.sampleRate);const d=b.getChannelData(0);
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for(let i=0;i<d.length;i++){const w=Math.random()*2-1;
+        b0=.99886*b0+w*.0555;b1=.99332*b1+w*.0751;b2=.969*b2+w*.154;b3=.8665*b3+w*.310;
+        b4=.55*b4+w*.533;b5=-.7616*b5-w*.0169;d[i]=(b0+b1+b2+b3+b4+b5+b6+w*.536)*.11;b6=w*.116;}
+      return b;}
+    const src=ac.createBufferSource();src.buffer=mkNoise();src.loop=true;
+    const filt=ac.createBiquadFilter();filt.type='lowpass';filt.frequency.value=cfg.nf;filt.Q.value=cfg.nq;
+    const ng=ac.createGain();ng.gain.setValueAtTime(0,ac.currentTime);ng.gain.linearRampToValueAtTime(cfg.ng,ac.currentTime+1.6);
+    src.connect(filt);filt.connect(ng);ng.connect(ac.destination);src.start();_ambNodes.push({src,gain:ng});
+    if(cfg.of){const o=ac.createOscillator();const og=ac.createGain();o.type='sine';o.frequency.value=cfg.of;
+      og.gain.setValueAtTime(0,ac.currentTime);og.gain.linearRampToValueAtTime(cfg.ng*.3,ac.currentTime+2);
+      o.connect(og);og.connect(ac.destination);o.start();_ambNodes.push({osc:o,gain:og});}
+  }catch(e){}
+}
 
 function playUnlock(){try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type='sine';o.frequency.setValueAtTime(523,ac.currentTime);o.frequency.exponentialRampToValueAtTime(784,ac.currentTime+.12);g.gain.setValueAtTime(0,ac.currentTime);g.gain.linearRampToValueAtTime(.12,ac.currentTime+.03);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.45);o.start(ac.currentTime);o.stop(ac.currentTime+.45);}catch(e){}}
 function updateMap(){
@@ -595,7 +669,7 @@ const IMGS={
 };
 const PORTRAITS={LAPO:'kwasi_solo',KWASI:'bar'};
 const PORT_CROP={LAPO:'center 48%',KWASI:'center 35%'};
-const IMG_CROP={coffee_selfie:'center 58%',fishcheeks:'center 30%',milano:'center 40%',jacs:'center 40%',wv:'center 40%',group_friends:'center 45%',restaurant:'center 40%'};
+const IMG_CROP={coffee_selfie:'center 58%',fishcheeks:'center 30%',milano:'center 40%',jacs:'center 40%',wv:'center 40%',group_friends:'center 45%',restaurant:'center 40%',amsterdam:'center 20%'};
 const MAP_PIN={wv:'wv',feast:'jacs'};
 function initMapPins(){
   const tip=document.getElementById('zone-tip');
@@ -667,7 +741,7 @@ const ZD={
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"Who are you and what did you do with Lapo."},
     {w:'LAPO',p:'\u{1F4AC}',t:"Drink before I say something else."},
   ]},
-  hq:{name:'NIGHT IN HQ',icon:'\u{1F4FA}',day:'Day 1 · Late Night',xp:75,img:null,dlg:[
+  hq:{name:'NIGHT IN HQ',icon:'\u{1F4FA}',day:'Day 1 · Late Night',xp:75,img:'amsterdam',dlg:[
     {w:'LAPO',p:'\u{1F4AC}',t:"Night In HQ. TV. Snacks. No agenda."},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"This might be my favourite part of the day."},
     {w:'LAPO',p:'\u{1F4AC}',t:"The McFlurry or the company?"},
@@ -800,7 +874,7 @@ function openZone(id){
   const img=document.getElementById('dlg-img');
   if(zd.img&&IMGS[zd.img]){img.src=IMGS[zd.img];img.style.display='block';img.style.objectPosition=IMG_CROP[zd.img]||'center 40%';revealPhoto(img);}
   else{img.style.display='none';img.src=''}
-  renderDlg(0);document.getElementById('dlg').classList.add('open');
+  renderDlg(0);document.getElementById('dlg').classList.add('open');playAmbient(id);
 }
 function currentLines(){
   const zd=ZD[G.activeZone];
@@ -845,8 +919,16 @@ function showChoice(){
   document.getElementById('dlg-choiceA').textContent=ch.optA;
   document.getElementById('dlg-choiceB').textContent=ch.optB;
   document.getElementById('dlg-choices').style.display='block';
+  const tw=document.getElementById('choice-timer-wrap');const tb=document.getElementById('choice-timer-bar');
+  tw.style.display='block';tb.className='choice-timer-bar';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    tb.classList.add('running');
+    window._choiceTimer=setTimeout(()=>tb.classList.add('urgent'),22000);
+  }));
 }
 function makeChoice(opt){
+  if(window._choiceTimer){clearTimeout(window._choiceTimer);window._choiceTimer=null;}
+  document.getElementById('choice-timer-wrap').style.display='none';
   G.choices[G.activeZone]=opt;
   if(opt==='B'&&['base','hq','wv'].includes(G.activeZone))G.heart++;
   G.dPhase=opt==='A'?'pathA':'pathB';
@@ -879,8 +961,8 @@ function advDlg(){
 }
 function acceptZone(){
   const id=G.activeZone,zd=ZD[id];G.visited.add(id);G.xp+=zd.xp;
-  showXP('+'+zd.xp+' XP');document.getElementById('dlg').classList.remove('open');
-  addJournalEntry(id);
+  showXP('+'+zd.xp+' XP');document.getElementById('dlg').classList.remove('open');stopAmbient();
+  addJournalEntry(id);showPolaroid(id);
   updateMap();
 }
 
@@ -910,8 +992,27 @@ function setVictoryCopy(){
   document.getElementById('v-sub').textContent=isA?'And the part I did not put on the map.':'And the part I did not put on the map.';
   document.getElementById('v-msg').innerHTML=isA
     ?'Two days. Every reservation landed.<br>Every stop exactly where it was supposed to be.<br><br>You asked for everything.<br>He said yes to all of it.<br><br>Next time is already forming in his head.<br>You both know it.'
-    :'Two days. Every reservation landed.<br>Every stop exactly where it was supposed to be.<br><br>You let it breathe.<br>So did he.<br><br>Some things do not need to be said to be true.<br>You both felt it.';
+    :'Two days. Every reservation landed.<br>Every stop exactly where it was supposed to be.<br><br>I am looking forward to seeing you.<br><br>Ha — I am not much of a planner, really.<br>More of a go-with-the-flow kind of guy.<br><br>Let me know if you have any suggestions.<br><br>This is just a simulation.<br>But everything in it is something we can actually do.';
 }
+// ── EASTER EGG ──
+(function(){
+  let typed='';
+  const MSGS=[
+    "He planned every restaurant.\nYou just had to show up.\n\nThe hard part was already done.\n\nCome to New York.\nThat is the whole plan.",
+    "Two days. Nine stops. Zero wasted moments.\n\nYou have been his favourite person\nto show things to since before either of you\nwere ready to say so.",
+    "\uD83C\uDF51\uD83E\uDD52 You unlocked the classified files.\n\nWe don't talk about what happened\nafter Jacs on Bond.",
+    "Fun fact: he had the crab curry pre-ordered.\n\nHe also had the whole weekend pre-ordered.\n\nHe just needed you to get on the plane.",
+  ];
+  document.addEventListener('keydown',function(e){
+    if(e.target.closest('input,textarea,[contenteditable]'))return;
+    typed=(typed+e.key).slice(-5).toUpperCase();
+    if(typed==='KWASI'){typed='';
+      document.getElementById('egg-msg').textContent=MSGS[Math.floor(Math.random()*MSGS.length)];
+      document.getElementById('egg-overlay').classList.add('on');confetti();}
+  });
+})();
+function closeEgg(){document.getElementById('egg-overlay').classList.remove('on');}
+
 function refuseTreaty(){refuses++;const sc=document.getElementById('treaty-scroll');document.getElementById('refuse-msg').style.display='block';sc.classList.add('shaking');setTimeout(()=>sc.classList.remove('shaking'),400);document.getElementById('refuse-msg').textContent=refuses>=3?'KWASI. SIGN. THE. TREATY.':' INVALID INPUT. TRY AGAIN.';}
 
 function confetti(){const c=['#FFD700','#7B2FBE','#a78bfa','#22c55e','#f472b6','#38bdf8','#fb923c'];for(let i=0;i<100;i++)setTimeout(()=>{const e=document.createElement('div');e.className='cbit';e.style.cssText=`left:${Math.random()*100}vw;background:${c[i%c.length]};border-radius:${Math.random()>.5?'50%':'0'};width:${(Math.random()*9+5).toFixed(1)}px;height:${(Math.random()*9+5).toFixed(1)}px;animation-duration:${(Math.random()*2+2).toFixed(2)}s`;document.body.appendChild(e);e.addEventListener('animationend',()=>e.remove())},i*35)}
@@ -976,6 +1077,27 @@ const JOURNAL_MEMS={
   feast:{zone:'NIGHT OUT',pur:true,text:"Last night. He picked where we went. First time all weekend I let him lead and he did not hesitate for a second. That is new. I noticed."},
 };
 const G_journal=[];
+// ── POLAROID ──
+const POL_CAPS={
+  feed:"Fish Cheeks. He ordered\nbefore I even sat down.",
+  bar:"Milano's. He hated it.\nThen he loved it.",
+  jacs:"Jacs on Bond.\nBetter for talking.",
+  hq:"Night in. No agenda.\nHis favourite part of Day 1.",
+  brooklyn:"Day 2. Coffee. Tea. Brooklyn\nin the morning.",
+  beacon:"Dia Beacon.\nFirst time for both of us.",
+  wv:"Rosemary's.\nThe debrief dinner.",
+  feast:"Last night. He picked\nwhere we went.",
+};
+function showPolaroid(id){
+  const zd=ZD[id];if(!zd.img||!IMGS[zd.img])return;
+  const cap=POL_CAPS[id];if(!cap)return;
+  document.getElementById('pol-img').src=IMGS[zd.img];
+  document.getElementById('pol-caption').textContent=cap;
+  const pov=document.getElementById('polaroid');
+  pov.classList.add('show');
+  setTimeout(()=>pov.classList.remove('show'),3000);
+}
+
 function addJournalEntry(zoneId){
   const m=JOURNAL_MEMS[zoneId];if(!m||G_journal.includes(zoneId))return;
   G_journal.push(zoneId);
@@ -1020,6 +1142,11 @@ initMapPins();
   const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const d=new Date();
   document.getElementById('ph-lock-date').textContent=days[d.getDay()]+', '+months[d.getMonth()]+' '+d.getDate();
+  const tripDate=new Date('2026-06-23T00:00:00');const diffMs=tripDate-d;
+  const cdEl=document.getElementById('ph-lock-countdown');
+  if(cdEl){if(diffMs>0){const dys=Math.floor(diffMs/864e5);const hrs=Math.floor((diffMs%864e5)/36e5);
+    cdEl.innerHTML=(dys>0?'<strong>'+dys+' day'+(dys!==1?'s':'')+' · '+hrs+' hr'+(hrs!==1?'s':'')+' until NYC</strong>':'<strong>'+hrs+' hr'+(hrs!==1?'s':'')+' until NYC 🏙️</strong>');}
+  else{cdEl.innerHTML='<strong>NYC IS NOW 🏙️</strong>';}}
 
   // Set Lapo portrait in iMessage header
   const hdrAv=document.getElementById('iph-hdr-av');
@@ -1027,6 +1154,7 @@ initMapPins();
   if(lapoImg){const img=document.createElement('img');img.src=lapoImg;img.style.objectPosition=PORT_CROP.LAPO||'center 20%';hdrAv.innerHTML='';hdrAv.appendChild(img);}
 
   const CONV=[
+    {me:true,  text:"Hi Lapo \uD83D\uDC4B"},
     {me:true,  text:"Hey Lapo, Congrats on Graduating \uD83C\uDF93"},
     {me:false, text:"Thanks Handsome \u2764\uFE0F"},
     {me:true,  text:"I'll be in town July 23\u201325th and July 31st"},
@@ -1085,6 +1213,57 @@ function phoneLockTap(){
 }
 function phoneTap(){if(!window._phoneReady)return;if(window._cinStarted)return;window._cinStarted=true;show('cin');runCin();}
 function startCinematic(){phoneTap();}
+
+// ── SHARE CARD (canvas) ──
+function generateShareCard(){
+  const cvs=document.createElement('canvas');cvs.width=800;cvs.height=480;
+  const ctx=cvs.getContext('2d');
+  const grad=ctx.createLinearGradient(0,0,0,480);
+  grad.addColorStop(0,'#050810');grad.addColorStop(1,'#0d0a20');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,800,480);
+  ctx.strokeStyle='rgba(255,215,0,.3)';ctx.lineWidth=2;ctx.strokeRect(14,14,772,452);
+  ctx.fillStyle='#FFD700';ctx.font='bold 14px "Courier New",monospace';ctx.textAlign='center';
+  ctx.fillText('OPERATION: KWASI COMES TO NEW YORK',400,52);
+  ctx.fillStyle='rgba(255,255,255,.38)';ctx.font='11px Inter,sans-serif';
+  ctx.fillText('JUNE 23 – 25, 2026  ·  NEW YORK CITY',400,76);
+  ctx.fillStyle='rgba(255,215,0,.15)';ctx.fillRect(14,90,772,2);
+  const zones=['base','feed','bar','jacs','hq','brooklyn','beacon','wv','feast'];
+  const zlabels=['The Landing Zone','Fish Cheeks','Milano's Bar','Jacs on Bond','Night In HQ','Brooklyn Morning','The Beacon Mission','Rosemary's','Night Out'];
+  ctx.textAlign='left';
+  zones.forEach((z,i)=>{
+    const done=G.visited.has(z);
+    ctx.fillStyle=done?'#22c55e':'rgba(255,255,255,.18)';
+    ctx.font=(done?'600 ':'')+'12px Inter,sans-serif';
+    const col=i<5?80:440;const row=110+(i%5)*44;
+    ctx.fillText((done?'✓ ':'○ ')+zlabels[i],col,row);
+  });
+  ctx.fillStyle='rgba(255,215,0,.15)';ctx.fillRect(14,338,772,2);
+  ctx.textAlign='center';
+  ctx.fillStyle='#a78bfa';ctx.font='11px Inter,sans-serif';
+  ctx.fillText('XP EARNED: '+G.xp+'  ·  PATH: '+(G.choices.wv==='A'?'PUSHED':'WAITED'),400,365);
+  ctx.fillStyle='rgba(255,255,255,.12)';ctx.font='10px Inter,sans-serif';
+  ctx.fillText('kwasi-quest.vercel.app',400,458);
+  function drawPortrait(imgKey,cropKey,x,y,w,h,label,borderCol){
+    const img=new Image();
+    img.onload=function(){
+      ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+      const sc=Math.max(w/img.width,h/img.height);
+      const sw=img.width*sc,sh=img.height*sc;
+      const cy=(PORT_CROP[cropKey]||'center 40%').includes('20%')?.2:.4;
+      ctx.drawImage(img,x+(w-sw)/2,y+(h-sh)*cy,sw,sh);
+      ctx.restore();ctx.strokeStyle=borderCol;ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);
+      ctx.fillStyle=borderCol;ctx.font='bold 10px Inter,sans-serif';ctx.textAlign='center';
+      ctx.fillText(label,x+w/2,y+h+16);
+    };
+    if(IMGS[imgKey])img.src=IMGS[imgKey];
+  }
+  drawPortrait(PORTRAITS.LAPO,'LAPO',80,100,150,220,'LAPO','#FFD700');
+  drawPortrait(PORTRAITS.KWASI,'KWASI',570,100,150,220,'KWASI','#a78bfa');
+  setTimeout(()=>{
+    try{const a=document.createElement('a');a.download='kwasi-nyc-operation-2026.png';
+      a.href=cvs.toDataURL('image/png');a.click();}catch(e){alert('Right-click the screen to save the image.');}
+  },500);
+}
 </script>
 </body>
 </html>
