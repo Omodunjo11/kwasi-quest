@@ -583,10 +583,18 @@ function playAmbient(id){
   stopAmbient();
   try{
     _ambCtx=new(window.AudioContext||window.webkitAudioContext)();const ac=_ambCtx;
-    const CFG={base:{nf:500,nq:.8,ng:.01},feed:{nf:280,nq:2.5,ng:.03,of:58},bar:{nf:130,nq:1.6,ng:.042,of:50},
-      jacs:{nf:340,nq:3,ng:.019,of:110},hq:{nf:900,nq:.5,ng:.011,of:220},
-      brooklyn:{nf:650,nq:1.5,ng:.015},beacon:{nf:480,nq:1.2,ng:.013},
-      wv:{nf:255,nq:2.2,ng:.024,of:82},feast:{nf:120,nq:1.3,ng:.048,of:60}};
+    // nf=noise filter freq, nq=Q, ng=noise gain, of=osc freq, og=osc gain multiplier, bp=bandpass layers for crowd
+      const CFG={
+        base:{nf:1200,nq:.6,ng:.008},                          // quiet arrival room
+        feed:{nf:900,nq:4,ng:.028,of:180,crowd:true},          // restaurant crowd chatter
+        bar:{nf:800,nq:3,ng:.038,of:110,crowd:true},           // bar crowd, lower rumble
+        jacs:{nf:1100,nq:5,ng:.022,of:200,crowd:true},         // intimate restaurant murmur
+        hq:{nf:3000,nq:.4,ng:.007,of:60},                      // quiet indoor TV hum
+        brooklyn:{nf:300,nq:.5,ng:.02,of:45,road:true},        // road noise, traffic rumble
+        beacon:{nf:600,nq:.7,ng:.012,of:80,road:true},         // outdoor air, distant road
+        wv:{nf:950,nq:4.5,ng:.025,of:190,crowd:true},          // restaurant crowd
+        feast:{nf:700,nq:3.5,ng:.04,of:100,crowd:true}         // loud bar/club
+      };
     const cfg=CFG[id];if(!cfg)return;
     function mkNoise(){const b=ac.createBuffer(1,ac.sampleRate*3,ac.sampleRate);const d=b.getChannelData(0);
       let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
@@ -594,13 +602,35 @@ function playAmbient(id){
         b0=.99886*b0+w*.0555;b1=.99332*b1+w*.0751;b2=.969*b2+w*.154;b3=.8665*b3+w*.310;
         b4=.55*b4+w*.533;b5=-.7616*b5-w*.0169;d[i]=(b0+b1+b2+b3+b4+b5+b6+w*.536)*.11;b6=w*.116;}
       return b;}
-    const src=ac.createBufferSource();src.buffer=mkNoise();src.loop=true;
-    const filt=ac.createBiquadFilter();filt.type='lowpass';filt.frequency.value=cfg.nf;filt.Q.value=cfg.nq;
-    const ng=ac.createGain();ng.gain.setValueAtTime(0,ac.currentTime);ng.gain.linearRampToValueAtTime(cfg.ng,ac.currentTime+1.6);
-    src.connect(filt);filt.connect(ng);ng.connect(ac.destination);src.start();_ambNodes.push({src,gain:ng});
-    if(cfg.of){const o=ac.createOscillator();const og=ac.createGain();o.type='sine';o.frequency.value=cfg.of;
-      og.gain.setValueAtTime(0,ac.currentTime);og.gain.linearRampToValueAtTime(cfg.ng*.3,ac.currentTime+2);
-      o.connect(og);og.connect(ac.destination);o.start();_ambNodes.push({osc:o,gain:og});}
+    function addNoiseSrc(freq,q,gain,type){
+      const s=ac.createBufferSource();s.buffer=mkNoise();s.loop=true;
+      const f=ac.createBiquadFilter();f.type=type||'lowpass';f.frequency.value=freq;f.Q.value=q;
+      const g=ac.createGain();g.gain.setValueAtTime(0,ac.currentTime);g.gain.linearRampToValueAtTime(gain,ac.currentTime+1.8);
+      s.connect(f);f.connect(g);g.connect(ac.destination);s.start();_ambNodes.push({src:s,gain:g});
+    }
+    function addOsc(freq,gain,type){
+      const o=ac.createOscillator();const g=ac.createGain();o.type=type||'sine';o.frequency.value=freq;
+      g.gain.setValueAtTime(0,ac.currentTime);g.gain.linearRampToValueAtTime(gain,ac.currentTime+2);
+      o.connect(g);g.connect(ac.destination);o.start();_ambNodes.push({osc:o,gain:g});
+    }
+    // Base layer
+    addNoiseSrc(cfg.nf,cfg.nq,cfg.ng);
+    if(cfg.crowd){
+      // Crowd: layered bandpass resonances simulating voice frequencies
+      addNoiseSrc(320,8,cfg.ng*.6,'bandpass');
+      addNoiseSrc(520,6,cfg.ng*.5,'bandpass');
+      addNoiseSrc(900,5,cfg.ng*.35,'bandpass');
+      addNoiseSrc(1400,4,cfg.ng*.25,'bandpass');
+      if(cfg.of)addOsc(cfg.of,cfg.ng*.12,'sawtooth');
+    } else if(cfg.road){
+      // Road: low rumble + periodic whoosh
+      addNoiseSrc(80,.4,cfg.ng*.8,'lowpass');
+      addNoiseSrc(400,1.2,cfg.ng*.4,'bandpass');
+      if(cfg.of)addOsc(cfg.of,cfg.ng*.08,'triangle');
+    } else {
+      // Quiet indoor
+      if(cfg.of)addOsc(cfg.of,cfg.ng*.15,'sine');
+    }
   }catch(e){}
 }
 
@@ -674,23 +704,18 @@ function playTransitIcon(from,to,cfg,onDone){
   const NS='http://www.w3.org/2000/svg';
   const x1=pa.x*W,y1=pa.y*H,x2=pb.x*W,y2=pb.y*H;
   const isFL=from==='london'&&to==='base';
-  const pid='tr-'+from+'-'+to+'-'+Date.now();
-  const guide=document.createElementNS(NS,'path');
   const cx=(x1+x2)/2,cy=isFL?Math.min(y1,y2)-H*.18:(y1+y2)/2;
-  guide.setAttribute('d',isFL?'M'+x1+','+y1+' Q'+cx+','+cy+' '+x2+','+y2:'M'+x1+','+y1+' L'+x2+','+y2);
-  guide.setAttribute('id',pid);guide.setAttribute('fill','none');guide.setAttribute('stroke','none');
-  svg.appendChild(guide);
+  const pathD=isFL?'M'+x1+','+y1+' Q'+cx+','+cy+' '+x2+','+y2:'M'+x1+','+y1+' L'+x2+','+y2;
   const t=document.createElementNS(NS,'text');
-  t.textContent=cfg.icon;t.setAttribute('font-size','22');
+  t.textContent=cfg.icon;t.setAttribute('font-size','28');
   t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
-  t.style.transition='opacity 0.5s';t.style.filter='drop-shadow(0 0 4px rgba(255,215,0,.6))';
+  t.style.transition='opacity 0.5s';t.style.opacity='1';
   const am=document.createElementNS(NS,'animateMotion');
   am.setAttribute('dur',cfg.dur+'s');am.setAttribute('repeatCount','1');am.setAttribute('fill','freeze');
+  am.setAttribute('path',pathD);
   if(cfg.rotate)am.setAttribute('rotate','auto');
-  const mp=document.createElementNS(NS,'mpath');
-  mp.setAttribute('href','#'+pid);
-  am.appendChild(mp);t.appendChild(am);svg.appendChild(t);
-  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>{t.remove();guide.remove();onDone&&onDone();},500);},cfg.dur*1000);
+  t.appendChild(am);svg.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>{t.remove();onDone&&onDone();},500);},cfg.dur*1000);
 }
 const _s=document.createElement('style');
 _s.textContent='@keyframes mpath{from{stroke-dashoffset:0}to{stroke-dashoffset:-26}}.mp{stroke-dashoffset:0}';
@@ -871,8 +896,8 @@ const ZD={
       {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(says nothing. Holds his gaze.)*",stage:true},
       {w:'LAPO',p:'\u{1F4AC}',t:"Not tonight."},
       {w:'LAPO',p:'\u{1F4AC}',t:"*(long beat)* But not never.",stage:true,beat:2200},
-      {w:'LAPO',p:'\u{1F4AC}',t:"*(raises glass)* To New York.",stage:true},
-      {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(quietly)* To New York.",stage:true},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(raises glass)* So. Let us talk about capitalism.",stage:true},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(laughing)* There it is.",stage:true,rxn:['\u{1F600}','\u{1F525}']},
     ],
   }},
   beacon:{name:'THE BEACON MISSION',icon:'\u{1F3D4}\ufe0f',day:'Day 2 · June 24',xp:150,img:'group_friends',dlg:[
@@ -899,15 +924,15 @@ const ZD={
     {w:'LAPO',p:'\u{1F4AC}',t:"Right now. Call it."},
   ],choice:{
     prompt:"Where does Kwasi choose?",
-    optA:"Harlem.",
-    optB:"Brooklyn.",
+    optA:"Harlem (Lambda).",
+    optB:"Brooklyn (Animal).",
     pathA:[
-      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Harlem."},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Harlem. Lambda."},
       {w:'LAPO',p:'\u{1F4AC}',t:"Lambda. Good call. Intimate. My people love that place."},
       {w:'KWASI',p:'\u{1F642}',pur:true,t:"Lead the way."},
     ],
     pathB:[
-      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Brooklyn."},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Brooklyn. Animal."},
       {w:'LAPO',p:'\u{1F4AC}',t:"Animal. Loud. Perfect. That is the one."},
       {w:'KWASI',p:'\u{1F642}',pur:true,t:"Let's go."},
     ],
