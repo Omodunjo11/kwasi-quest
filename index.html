@@ -837,6 +837,7 @@ function skipLondonChapter(){
   updateMap();
 }
 function devSkipStage(){
+  if(document.getElementById('phone').classList.contains('on')){startCinematic();return}
   if(document.getElementById('dlg').classList.contains('open')){clearInterval(window._tv);acceptZone();return}
   if(document.getElementById('lon-panel').classList.contains('open')){skipLondonChapter();return}
   if(document.getElementById('ch-complete').classList.contains('show')){closeCCC();return}
@@ -868,7 +869,7 @@ initMapPins();
   document.getElementById('ph-date').textContent=days[now.getDay()]+', '+months[now.getMonth()]+' '+now.getDate();
   setTimeout(()=>document.getElementById('ph-notif').classList.add('in'),600);
 })();
-function startCinematic(){flash(()=>{show('cin');runCin();});}
+function startCinematic(){if(window._cinStarted)return;window._cinStarted=true;show('cin');runCin();}
 </script>
 </body>
 </html>
