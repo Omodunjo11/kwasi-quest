@@ -616,17 +616,37 @@ function updateMap(){
 
 function drawPaths(){
   const svg=document.getElementById('map-svg'),vp=document.getElementById('map-vp');
-  svg.querySelectorAll('.mp').forEach(p=>p.remove());
+  svg.querySelectorAll('.mp,.mt').forEach(p=>p.remove());
   const W=vp.offsetWidth,H=vp.offsetHeight;if(!W||!H)return;
+  const NS='http://www.w3.org/2000/svg';
+  const TRAVEL={'london,base':'✈','brooklyn,beacon':'🚂'};
   PORD.forEach(([a,b])=>{
     const pa=POS[a],pb=POS[b],x1=pa.x*W,y1=pa.y*H,x2=pb.x*W,y2=pb.y*H;
     const active=(a==='london'&&G.lDone)||G.visited.has(a);
-    const p=document.createElementNS('http://www.w3.org/2000/svg','line');
-    p.setAttribute('x1',x1);p.setAttribute('y1',y1);p.setAttribute('x2',x2);p.setAttribute('y2',y2);
+    const isFL=a==='london'&&b==='base';
+    const pid='mp-'+a+'-'+b;
+    const p=document.createElementNS(NS,'path');
+    const cx=(x1+x2)/2,cy=isFL?Math.min(y1,y2)-H*.18:(y1+y2)/2;
+    const d=isFL?'M'+x1+','+y1+' Q'+cx+','+cy+' '+x2+','+y2:'M'+x1+','+y1+' L'+x2+','+y2;
+    p.setAttribute('d',d);p.setAttribute('id',pid);p.setAttribute('fill','none');
     p.setAttribute('stroke',active?'rgba(255,215,0,.55)':'rgba(80,80,120,.25)');
     p.setAttribute('stroke-width','2');p.setAttribute('stroke-dasharray',active?'8 5':'4 6');
     p.classList.add('mp');if(active)p.style.animation='mpath 1.8s linear infinite';
     svg.appendChild(p);
+    if(active){
+      const mode=TRAVEL[a+','+b]||'🚶';
+      const dur=isFL?'5s':(a==='brooklyn'&&b==='beacon')?'3.5s':'2.5s';
+      const t=document.createElementNS(NS,'text');
+      t.textContent=mode;
+      t.setAttribute('font-size','18');t.setAttribute('text-anchor','middle');
+      t.setAttribute('dominant-baseline','middle');t.classList.add('mt');
+      const am=document.createElementNS(NS,'animateMotion');
+      am.setAttribute('dur',dur);am.setAttribute('repeatCount','indefinite');
+      if(isFL)am.setAttribute('rotate','auto');
+      const mp=document.createElementNS(NS,'mpath');
+      mp.setAttribute('href','#'+pid);
+      am.appendChild(mp);t.appendChild(am);svg.appendChild(t);
+    }
   });
 }
 const _s=document.createElement('style');
