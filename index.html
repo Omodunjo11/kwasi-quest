@@ -126,6 +126,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .dlg-foot{display:flex;justify-content:space-between;align-items:center;min-height:2rem}
 .dlg-cont{font-family:'Press Start 2P',monospace;font-size:.46rem;color:var(--pl);cursor:pointer;animation:blink 1s step-end infinite;margin-left:auto}
 #dlg-accept{display:none}
+#dlg-choices{display:none;padding:.6rem 0 .1rem}
+.dlg-choice-prompt{font-size:.68rem;color:var(--muted);font-style:italic;margin-bottom:.55rem;text-align:center}
+.dlg-choice-btns{display:flex;gap:.6rem}
+.dlg-choice-btn{flex:1;padding:.6rem .55rem;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:4px;color:var(--fg);font-family:inherit;font-size:.82rem;cursor:pointer;text-align:left;line-height:1.4;transition:border-color .15s,background .15s}
+.dlg-choice-btn:hover{border-color:rgba(255,215,0,.55);background:rgba(255,215,0,.05)}
+.dlg-stage{color:var(--muted);font-style:italic}
+.dlg-callback{animation:callback-flash .6s ease}
+@keyframes callback-flash{0%,100%{opacity:1}40%{opacity:.25}}
 
 /* TREATY */
 #treaty{position:fixed;inset:0;z-index:10;opacity:0;pointer-events:none;transition:opacity .5s;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:3rem 1.5rem 5rem}
@@ -316,6 +324,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     </div>
     <div class="dlg-row"><div class="dlg-port" id="dlg-port">&#128172;</div><div class="dlg-spk" id="dlg-spk">LAPO</div></div>
     <div class="dlg-txt" id="dlg-txt"></div>
+    <div id="dlg-choices">
+      <div class="dlg-choice-prompt" id="dlg-cprompt"></div>
+      <div class="dlg-choice-btns">
+        <button class="dlg-choice-btn" id="dlg-choiceA" onclick="makeChoice('A')"></button>
+        <button class="dlg-choice-btn" id="dlg-choiceB" onclick="makeChoice('B')"></button>
+      </div>
+    </div>
     <div class="dlg-foot">
       <button class="btn btn-p" id="dlg-accept" onclick="acceptZone()" style="display:none"><span class="binn">QUEST ACCEPTED &#10003;</span></button>
       <div class="dlg-cont" id="dlg-cont" onclick="advDlg()">&#9654; CONTINUE</div>
@@ -353,10 +368,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <div class="vic-port"><img id="vic-lapo" alt="Lapo"/></div>
     <div class="vic-port pur"><img id="vic-kwasi" alt="Kwasi"/></div>
   </div>
-  <div class="v-title">You made it through the whole itinerary.</div>
-  <p class="v-msg">This is just a simulation. In real life, feel free to offer suggestions. I am not as much of a planner as this makes me look.<br><br>Hope you enjoyed it. Happy to host you, and see you soon!</p>
+  <div class="v-title" id="v-title">You made it through the whole itinerary.</div>
+  <p class="v-msg" id="v-sub" style="font-weight:600;margin-bottom:.4rem"></p>
+  <p class="v-msg" id="v-msg"></p>
   <div class="v-date">OPERATION: NYC &middot; JUNE 23 to 25, 2026<br>&#127468;&#127469; &#127468;&#127463; to &#127482;&#127480;</div>
-  <p style="font-size:.82rem;color:var(--muted);margin-top:1rem;font-style:italic">- L</p>
+  <p style="font-size:.82rem;color:var(--muted);margin-top:1rem;font-style:italic" id="v-footer">&#8212; L</p>
   <button class="btn" style="margin-top:1.5rem" onclick="location.reload()"><span class="binn">&#8617; PLAY AGAIN</span></button>
   </div>
 </div>
@@ -388,7 +404,7 @@ function advCin(){if(!cinReady||!document.getElementById('cin').classList.contai
 function animStats(){document.querySelectorAll('.stat-fill').forEach(b=>{b.style.width=b.dataset.w})}
 function beginMission(){flash(()=>{show('map');setTimeout(()=>{drawPaths();updateMap()},130)})}
 
-const G={xp:0,lTasks:[false,false,false,false,false,false],lDone:false,order:['base','feed','bar','jacs','hq','brooklyn','beacon','wv','feast'],visited:new Set(),activeZone:null,dStep:0};
+const G={xp:0,lTasks:[false,false,false,false,false,false],lDone:false,order:['base','feed','bar','jacs','hq','brooklyn','beacon','wv','feast'],visited:new Set(),activeZone:null,dStep:0,dPhase:'main',choices:{}};
 const LXP=[50,50,75,75,75,100];
 const POS={london:{x:.16,y:.14},base:{x:.50,y:.30},feed:{x:.24,y:.48},bar:{x:.70,y:.52},jacs:{x:.68,y:.67},hq:{x:.46,y:.67},brooklyn:{x:.20,y:.55},beacon:{x:.80,y:.22},wv:{x:.28,y:.76},feast:{x:.54,y:.83}};
 const PORD=[['london','base'],['base','feed'],['feed','bar'],['bar','jacs'],['jacs','hq'],['hq','brooklyn'],['brooklyn','beacon'],['beacon','wv'],['wv','feast']];
@@ -471,11 +487,23 @@ const ZD={
     {w:'LAPO',p:'\u{1F4AC}',t:"You made it. Finally."},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"Finally?"},
     {w:'LAPO',p:'\u{1F4AC}',t:"I have been waiting to show someone this city properly. Get settled. I have a reservation tonight."},
-    {w:'KWASI',p:'\u{1F642}',pur:true,t:"Where are we going?"},
-    {w:'LAPO',p:'\u{1F4AC}',t:"That is question one of three. I had this planned for a while. I just needed you to actually get on the plane."},
-    {w:'KWASI',p:'\u{1F642}',pur:true,t:"No pressure then."},
-    {w:'LAPO',p:'\u{1F4AC}',t:"None at all. Use your questions wisely."},
-  ]},
+  ],choice:{
+    prompt:"What does Kwasi do?",
+    optA:"Where are we going?",
+    optB:"*(Smiles and says nothing)*",
+    pathA:[
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Where are we going?"},
+      {w:'LAPO',p:'\u{1F4AC}',t:"That is question one of three. I had this planned for a while. I just needed you to actually get on the plane."},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"No pressure then."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"None at all. Use the others wisely."},
+    ],
+    pathB:[
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(says nothing. Just smiles.)*",stage:true},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(beat)* You are not going to ask.",stage:true},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"You said you had it."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(quietly)* Yeah. I do.",stage:true},
+    ],
+  }},
   feed:{name:'FISH CHEEKS',icon:'\u{1F420}',day:'Day 1 · Evening',xp:100,img:'fishcheeks',dlg:[
     {w:'LAPO',p:'\u{1F4AC}',t:"Fish Cheeks. Thai seafood. NoHo. You are going to love it."},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"This place looks incredible."},
@@ -513,9 +541,26 @@ const ZD={
     {w:'LAPO',p:'\u{1F4AC}',t:"The McFlurry or the company?"},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"Both."},
     {w:'LAPO',p:'\u{1F4AC}',t:"I was supposed to play it cool tonight."},
-    {w:'KWASI',p:'\u{1F642}',pur:true,t:"How's that going."},
-    {w:'LAPO',p:'\u{1F4AC}',t:"Awful. Pass the remote."},
-  ]},
+  ],choice:{
+    prompt:"What does Kwasi do?",
+    optA:"You are doing terribly.",
+    optB:"*(Stays quiet)*",
+    pathA:[
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"You are doing terribly."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"Awful. Pass the remote."},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(laughing)* That is your recovery?",stage:true},
+      {w:'LAPO',p:'\u{1F4AC}',t:"I am not recovering. I am redirecting. There is a difference."},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"There is not."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(quietly)* No. There is not.",stage:true},
+    ],
+    pathB:[
+      {w:'LAPO',p:'\u{1F4AC}',t:"You are not going to say anything."},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"No."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(longer beat)* That is worse, for the record.",stage:true},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"I know."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(quietly, almost to himself)* Yeah. Me too.",stage:true},
+    ],
+  }},
   brooklyn:{name:'BROOKLYN MORNING',icon:'\u2615',day:'Day 2 · Morning',xp:75,img:'coffee_selfie',dlg:[
     {w:'LAPO',p:'\u{1F4AC}',t:"Day 2. No rush. Coffee first. We are walking Brooklyn this morning."},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"This is exactly what I needed."},
@@ -538,11 +583,31 @@ const ZD={
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"I did not expect this trip to feel like... this."},
     {w:'LAPO',p:'\u{1F4AC}',t:"Like what?"},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"You know what."},
-    {w:'LAPO',p:'\u{1F4AC}',t:"Yeah. I do."},
+    {w:'LAPO',p:'\u{1F4AC}',t:"Yeah. I do.",callback:true},
     {w:'LAPO',p:'\u{1F4AC}',t:"One last thing."},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"What is it?"},
-    {w:'LAPO',p:'\u{1F4AC}',t:"Not tonight."},
-  ]},
+  ],choice:{
+    prompt:"What does Kwasi do?",
+    optA:"Tell me.",
+    optB:"*(Waits)*",
+    pathA:[
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Tell me."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(beat)* Not here.",stage:true},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Then when?"},
+      {w:'LAPO',p:'\u{1F4AC}',t:"Soon. I just need it to not be tonight."},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"Why?"},
+      {w:'LAPO',p:'\u{1F4AC}',t:"Because tonight I want to sit here with you. And not make it complicated yet."},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(quietly)* Okay.",stage:true},
+      {w:'LAPO',p:'\u{1F4AC}',t:"Okay."},
+    ],
+    pathB:[
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(says nothing. Holds his gaze.)*",stage:true},
+      {w:'LAPO',p:'\u{1F4AC}',t:"Not tonight."},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(long beat)* But not never.",stage:true},
+      {w:'LAPO',p:'\u{1F4AC}',t:"*(raises glass)* To New York.",stage:true},
+      {w:'KWASI',p:'\u{1F642}',pur:true,t:"*(quietly)* To New York.",stage:true},
+    ],
+  }},
   beacon:{name:'THE BEACON MISSION',icon:'\u{1F3D4}\ufe0f',day:'Day 2 · June 24',xp:150,img:'group_friends',dlg:[
     {w:'LAPO',p:'\u{1F4AC}',t:"Beacon. About ninety minutes north. Dia Beacon first, and my friends are coming too."},
     {w:'KWASI',p:'\u{1F642}',pur:true,t:"Wait, the whole crew?"},
@@ -572,31 +637,69 @@ function openZone(id){
   const n=document.getElementById('z-'+id);
   if(n.classList.contains('locked')){toast('Complete previous quests first.');return}
   if(n.classList.contains('done')){toast('Zone already explored \u2713');return}
-  G.activeZone=id;G.dStep=0;
+  G.activeZone=id;G.dStep=0;G.dPhase='main';
   const zd=ZD[id];
   document.getElementById('dlg-zt').textContent=zd.icon+' '+zd.name+' \u00b7 '+zd.day;
   document.getElementById('dlg-accept').style.display='none';
   document.getElementById('dlg-cont').style.display='block';
+  document.getElementById('dlg-choices').style.display='none';
   const img=document.getElementById('dlg-img');
   if(zd.img&&IMGS[zd.img]){img.src=IMGS[zd.img];img.style.display='block';img.style.objectPosition=IMG_CROP[zd.img]||'center 40%'}
   else{img.style.display='none';img.src=''}
   renderDlg(0);document.getElementById('dlg').classList.add('open');
 }
+function currentLines(){
+  const zd=ZD[G.activeZone];
+  if(G.dPhase==='pathA')return zd.choice.pathA;
+  if(G.dPhase==='pathB')return zd.choice.pathB;
+  return zd.dlg;
+}
 function renderDlg(step){
-  const line=ZD[G.activeZone].dlg[step];
+  const lines=currentLines(),line=lines[step];
   const port=document.getElementById('dlg-port'),spk=document.getElementById('dlg-spk');
   const _pk=PORTRAITS[line.w];if(_pk&&IMGS[_pk]){const _pc=PORT_CROP[line.w]||'center 40%';port.innerHTML='<img src="'+IMGS[_pk]+'" style="width:100%;height:100%;object-fit:cover;object-position:'+_pc+';">';port.className='dlg-port'+(line.pur?' pur':'');}else{port.textContent=line.p;port.className='dlg-port'+(line.pur?' pur':'');}
   spk.textContent=line.w;spk.className='dlg-spk'+(line.pur?' pur':'');
-  const txt=document.getElementById('dlg-txt');txt.textContent='';
+  const txt=document.getElementById('dlg-txt');
+  txt.className='dlg-txt'+(line.stage?' dlg-stage':'');
+  if(line.callback&&G.choices.base==='B')txt.classList.add('dlg-callback');
+  txt.textContent='';
+  const isLast=step===lines.length-1;
   let i=0;clearInterval(window._tv);
   window._tv=setInterval(()=>{txt.textContent=line.t.slice(0,++i);
     if(i>=line.t.length){clearInterval(window._tv);
-      if(step===ZD[G.activeZone].dlg.length-1){document.getElementById('dlg-cont').style.display='none';document.getElementById('dlg-accept').style.display='block'}}},24);
+      if(isLast){
+        if(G.dPhase==='main'&&ZD[G.activeZone].choice){showChoice();}
+        else{document.getElementById('dlg-cont').style.display='none';document.getElementById('dlg-accept').style.display='block';}
+      }
+    }},24);
+}
+function showChoice(){
+  const ch=ZD[G.activeZone].choice;
+  document.getElementById('dlg-cont').style.display='none';
+  document.getElementById('dlg-cprompt').textContent=ch.prompt;
+  document.getElementById('dlg-choiceA').textContent=ch.optA;
+  document.getElementById('dlg-choiceB').textContent=ch.optB;
+  document.getElementById('dlg-choices').style.display='block';
+}
+function makeChoice(opt){
+  G.choices[G.activeZone]=opt;
+  G.dPhase=opt==='A'?'pathA':'pathB';
+  G.dStep=0;
+  document.getElementById('dlg-choices').style.display='none';
+  document.getElementById('dlg-cont').style.display='block';
+  renderDlg(0);
 }
 function advDlg(){
-  const zd=ZD[G.activeZone],txt=document.getElementById('dlg-txt'),cur=zd.dlg[G.dStep];
-  if(txt.textContent.length<cur.t.length){clearInterval(window._tv);txt.textContent=cur.t;if(G.dStep===zd.dlg.length-1){document.getElementById('dlg-cont').style.display='none';document.getElementById('dlg-accept').style.display='block'}return}
-  G.dStep++;if(G.dStep<zd.dlg.length)renderDlg(G.dStep);
+  const lines=currentLines(),txt=document.getElementById('dlg-txt'),cur=lines[G.dStep];
+  if(txt.textContent.length<cur.t.length){
+    clearInterval(window._tv);txt.textContent=cur.t;
+    if(G.dStep===lines.length-1){
+      if(G.dPhase==='main'&&ZD[G.activeZone].choice){showChoice();}
+      else{document.getElementById('dlg-cont').style.display='none';document.getElementById('dlg-accept').style.display='block';}
+    }
+    return;
+  }
+  G.dStep++;if(G.dStep<lines.length)renderDlg(G.dStep);
 }
 function acceptZone(){
   const id=G.activeZone,zd=ZD[id];G.visited.add(id);G.xp+=zd.xp;
@@ -610,7 +713,15 @@ function initVictoryPortraits(){
   if(lp&&lk&&IMGS[lk]){lp.src=IMGS[lk];lp.style.objectPosition=PORT_CROP.LAPO||'center 40%'}
   if(kp&&kk&&IMGS[kk]){kp.src=IMGS[kk];kp.style.objectPosition=PORT_CROP.KWASI||'center 40%'}
 }
-function signTreaty(){flash(()=>{show('victory');confetti();initVictoryPortraits();})}
+function signTreaty(){flash(()=>{show('victory');confetti();initVictoryPortraits();setVictoryCopy();})}
+function setVictoryCopy(){
+  const wvChoice=G.choices.wv;
+  const isA=wvChoice==='A';
+  document.getElementById('v-sub').textContent=isA?'And the part I did not put on the map.':'And the part I did not put on the map.';
+  document.getElementById('v-msg').innerHTML=isA
+    ?'Two days. Every reservation landed.<br>Every stop exactly where it was supposed to be.<br><br>You pushed. He answered.<br>Not everything. But enough.<br><br>Not tonight was not forever.<br>Soon was the word he used.<br>Hold him to it.'
+    :'Two days. Every reservation landed.<br>Every stop exactly where it was supposed to be.<br><br>You did not push.<br>Neither did he.<br><br>Some things do not need to be said on the night.<br><br>Not tonight was not forever.<br>You both know that.';
+}
 function refuseTreaty(){refuses++;const sc=document.getElementById('treaty-scroll');document.getElementById('refuse-msg').style.display='block';sc.classList.add('shaking');setTimeout(()=>sc.classList.remove('shaking'),400);document.getElementById('refuse-msg').textContent=refuses>=3?'KWASI. SIGN. THE. TREATY.':' INVALID INPUT. TRY AGAIN.';}
 
 function confetti(){const c=['#FFD700','#7B2FBE','#a78bfa','#22c55e','#f472b6','#38bdf8','#fb923c'];for(let i=0;i<100;i++)setTimeout(()=>{const e=document.createElement('div');e.className='cbit';e.style.cssText=`left:${Math.random()*100}vw;background:${c[i%c.length]};border-radius:${Math.random()>.5?'50%':'0'};width:${(Math.random()*9+5).toFixed(1)}px;height:${(Math.random()*9+5).toFixed(1)}px;animation-duration:${(Math.random()*2+2).toFixed(2)}s`;document.body.appendChild(e);e.addEventListener('animationend',()=>e.remove())},i*35)}
