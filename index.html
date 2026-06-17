@@ -211,8 +211,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 #sig-overlay.on{opacity:1;pointer-events:all}
 .sig-label{font-family:'Press Start 2P',monospace;font-size:.46rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.25rem}
 #sig-svg{display:block}
-#sig-svg text{fill:none;stroke:var(--gold);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2000;stroke-dashoffset:2000;transition:stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1)}
-#sig-svg text.signing{stroke-dashoffset:0}
+@keyframes sigReveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0% 0 0)}}
+#sig-svg text{fill:var(--gold);clip-path:inset(0 100% 0 0)}
+#sig-svg text.signing{animation:sigReveal 1.3s cubic-bezier(.25,0,.2,1) forwards}
 .cbit{position:fixed;top:-20px;pointer-events:none;z-index:9997;animation:cfall linear forwards}
 @keyframes cfall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
 .btn{font-family:'Press Start 2P',monospace;font-size:clamp(.44rem,1.5vw,.6rem);padding:.8rem 1.5rem;border:2px solid var(--gold);background:transparent;color:var(--gold);cursor:pointer;position:relative;letter-spacing:.04em;line-height:1.6}
@@ -403,7 +404,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 <div id="sig-overlay">
   <div class="sig-label">SIGNING THE TREATY...</div>
   <svg id="sig-svg" width="220" height="80" viewBox="0 0 220 80">
-    <text x="12" y="62" font-family="Georgia,serif" font-size="46" font-style="italic" font-weight="400" fill="none">Kwasi</text>
+    <text x="10" y="64" font-family="Georgia,serif" font-size="52" font-style="italic" font-weight="400">Kwasi</text>
   </svg>
 </div>
 
@@ -464,7 +465,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   <p class="v-msg" id="v-sub" style="font-weight:600;margin-bottom:.4rem"></p>
   <p class="v-msg" id="v-msg"></p>
   <div class="v-date">OPERATION: NYC &middot; JUNE 23 to 25, 2026<br>&#127468;&#127469; &#127468;&#127463; to &#127482;&#127480;</div>
-  <p style="font-size:.82rem;color:var(--muted);margin-top:1rem;font-style:italic" id="v-footer">&#8212; L</p>
+  
   <div id="wax-seal"><svg width="58" height="58" viewBox="0 0 58 58" xmlns="http://www.w3.org/2000/svg"><circle cx="29" cy="29" r="26" fill="#2a1545" stroke="#7B2FBE" stroke-width="2"/><circle cx="29" cy="29" r="21" fill="none" stroke="rgba(167,139,250,.4)" stroke-width="1" stroke-dasharray="3 2.5"/><text x="29" y="36" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="400" fill="#c084fc" letter-spacing="2" font-style="italic">Lapo</text></svg></div>
   <button class="btn" style="margin-top:1.5rem" onclick="location.reload()"><span class="binn">&#8617; PLAY AGAIN</span></button>
   </div>
